@@ -4,15 +4,17 @@ const {verifyToken} = require("../middlewares/verifyToken")
 
 // CREATE EVENT 
 router.post("/", verifyToken ,eventController.createEvent);
-//UPDATE JOB
+//UPDATE EVENT
 router.put("/:id", verifyToken ,eventController.updateEvent);
-//DELETE JOB
+//DELETE EVENT
 router.delete("/:id", verifyToken , eventController.deleteEvent);
-//GET JOB BY ID
+//GET EVENT BY ID
 router.get("/:id" ,eventController.getEvent);
-//GET ALL JOB
+//GET ALL EVENT
 router.get("/" ,eventController.getAllEvents);
-//SEARCH JOB
+
+router.get("/showTime/:id", eventController.getAllShowTimes);
+//SEARCH EVENT
 // router.get("/search/:key" , eventController.searchEvents);
 
 

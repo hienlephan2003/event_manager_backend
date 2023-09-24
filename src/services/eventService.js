@@ -13,12 +13,12 @@ exports.createNewEvent = (event) => {
         }
     })
 }
-exports.updateEvent = (event) => {
+exports.updateEvent = (eventId, event) => {
     return new Promise(async (resolve, reject) => {
         try{
-            const updateEvent = await Job.findByIdAndUpdate(
-                req.params.id, {
-                    $set: req.body,
+            const updateEvent = await ShowTime.findByIdAndUpdate(
+                eventId, {
+                    $set: event,
                 }, {new: true}
             )
             const { __v, createdAt, updatedAt, ...others} = updateEvent._doc;       

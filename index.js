@@ -7,6 +7,7 @@ const cors = require('cors')
 
 const authRouter = require('./src/routes/auth')
 const eventRouter = require('./src/routes/event')
+const showTimeRouter = require('./src/routes/showTime')
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL)
@@ -17,5 +18,5 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 app.use("/api", authRouter);
 app.use("/api/event", eventRouter)
-
+app.use("/api/showTime", showTimeRouter)
 const server = app.listen(process.env.PORT || 3000, () => console.log(`Example app listening on port ${process.env.PORT || 3000}!`))

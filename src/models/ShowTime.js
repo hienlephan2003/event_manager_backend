@@ -8,11 +8,6 @@ const ShowTimeSchema = new mongoose.Schema({
     },
     startAt: {type: Date, required: true,},
     endAt: {type: Date, required: true},
-    address: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Address",
-        required: true,
-    },
     stageId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Stage",

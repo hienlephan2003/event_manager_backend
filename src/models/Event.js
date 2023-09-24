@@ -4,7 +4,7 @@ const EventSchema = new mongoose.Schema({
     eventName: {type: String, required: true},
     eventType: {
         type: String, 
-        enum: ['liveMusic', 'theater', 'course', 'sport', 'community','nightlife'],
+        enum: ['liveMusic', 'theater', 'course', 'sport', 'community','nightlife', 'artculture'],
         required: true},
     organizerId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -16,14 +16,19 @@ const EventSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: ['upcomming', '','canceled', 'occurred'],
-        default: 'upcoming'
+        default: 'upcomming'
     },
     embeddedLinks : [{type: String}],
     startTime: {type: Date, required: true},
     showTimes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "ShowTime",
-    }]
+    }],
+    addressId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+        required: true,
+    },
 }, {timestamps: true}
 );
 
