@@ -20,16 +20,19 @@ const EventSchema = new mongoose.Schema({
     },
     embeddedLinks : [{type: String}],
     startTime: {type: Date, required: true},
-    showTimes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "ShowTime",
-    }],
     addressId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Address",
         required: true,
     },
-}, {timestamps: true}
+}, {
+    toJSON: { virtuals: true }, // So `res.json()` and other `JSON.stringify()` functions include virtuals
+    toObject: { virtuals: true }, // So `console.log()` and other functions that use `toObject()` include virtuals
+    timestamps: true}
 );
-
+EventSchema.virtual('showTimes', {
+    ref: "ShowTime",
+    localField: "_id",
+    foreignField: "eventId"
+})
 module.exports = mongoose.model("Event", EventSchema);

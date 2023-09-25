@@ -12,8 +12,13 @@ const ShowTimeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Stage",
         required: true,
+    },
+    stageState: {
+        type: [[]],
+        require: true,
     }
-}, {timestamps: true}
+}, {
+    timestamps: true}
 );
 
 module.exports = mongoose.model("ShowTime", ShowTimeSchema);

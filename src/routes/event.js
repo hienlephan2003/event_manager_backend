@@ -13,7 +13,7 @@ router.get("/:id" ,eventController.getEvent);
 //GET ALL EVENT
 router.get("/" ,eventController.getAllEvents);
 
-router.get("/showTime/:id", eventController.getAllShowTimes);
+router.get("/showTime/:id", eventController.getAllShowTimesOfEvent);
 //SEARCH EVENT
 // router.get("/search/:key" , eventController.searchEvents);
 

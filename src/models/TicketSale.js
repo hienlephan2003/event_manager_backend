@@ -1,4 +1,4 @@
-const mongoose = requires("mongoose")
+const mongoose = require("mongoose")
 
 const TicketSaleSchema = new mongoose.Schema({
     ticketTypeId: {
@@ -11,9 +11,12 @@ const TicketSaleSchema = new mongoose.Schema({
         ref:"ShowTime",
         required: true
     },
-    startSaleAt: {type: Date, required: false },
+    startSaleAt: {
+        type: Date, 
+        required: false,
+        default: Date.now() 
+    },
     endSaleAt: {type: Date, required: false },
-    totalNumber: {type: Number, required: true},
     minPerOrder: {type: Number, required: false, default: 1},
     maxPerOrder: {type: Number, required: false},
 }, {timestamps: true}

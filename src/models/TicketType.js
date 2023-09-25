@@ -6,10 +6,7 @@ const TicketTypeSchema = new mongoose.Schema({
         ref:"Organizer",
         required: true
     },
-    ticketName: {type: Number, required: true},
-    seatType: {type: String,
-        enum: ['vip', 'premium', 'standard'],
-        required: true},
+    ticketName: {type: String, required: true},
     ticketColor: String,
     ticketImage: String,
     description: String,

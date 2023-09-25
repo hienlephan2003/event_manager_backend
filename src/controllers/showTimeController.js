@@ -4,10 +4,8 @@ const ShowTime = require("../models/ShowTime")
 module.exports = {
     createShowTimes: async (req, res) =>{
         try{
-            const showTimes = req.showTimes;
-            const newShowTimes = await showTimeService.createNewShowTimes(showTimes)
-            const updateEvent = await eventService.updateEvent(req.eventId, {showTimes: newShowTimes})
-            console.log(updateEvent)
+            const data = req.body;
+            const newShowTimes = await showTimeService.createNewShowTimes( data )
             res.status(200).json(newShowTimes)
         }
         catch(e){

@@ -9,13 +9,23 @@ const StageSchema = new mongoose.Schema({
     seatNumber: {type: Number, required: true},
     heightDimension: {type: Number, required: true},
     widthDimension: {type: Number, required: true},
-    toJSON: { virtuals: true }, // So `res.json()` and other `JSON.stringify()` functions include virtuals
-    toObject: { virtuals: true } // So `console.log()` and other functions that use `toObject()` include virtuals
+    stageModel: {
+        type: [[]],
+        require: true,
+    },
+    ticketMap: {
+        type: Map,
+        of: {
+            type: 'ObjectId',
+            ref: "TicketSale"
+        },
+        require: true,
+    },
 }, {timestamps: true}
 );
-StageSchema.virtual('seats', {
-    ref: "Seat",
-    localField: "_id",
-    foreignField: "stageId"
-})
+// StageSchema.virtual('seats', {
+//     ref: "Seat",
+//     localField: "_id",
+//     foreignField: "stageId"
+// })
 module.exports = mongoose.model("Stage", StageSchema);

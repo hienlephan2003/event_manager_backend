@@ -15,6 +15,10 @@ const ShowTicketSchema = new mongoose.Schema({
         type: String,
         enum: ['reserved', 'available'],
         required: true
+    },
+    seatPosition: {
+        type: Seat,
+        require: true,
     }
 }, {timestamps: true}
 );
