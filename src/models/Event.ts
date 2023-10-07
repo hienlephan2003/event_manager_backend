@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+// export interface IEvent {
+//     eventName: string;
+//     eventType: string;
+//     organizerId?: mongoose.Schema.Types.ObjectId;
+//     coverImage: string;
+//     description:String;
+//     status: string;
+//     embeddedLinks:Array<string>;
+//     startTime: Date;
+//     stageId: mongoose.Schema.Types.ObjectId;
+
+//   }
 
 const EventSchema = new mongoose.Schema({
     eventName: {type: String, required: true},
@@ -31,9 +43,11 @@ const EventSchema = new mongoose.Schema({
     toObject: { virtuals: true }, // So `console.log()` and other functions that use `toObject()` include virtuals
     timestamps: true}
 );
-EventSchema.virtual('showTimes', {
+EventSchema.virtual('showtimes', {
     ref: "ShowTime",
     localField: "_id",
     foreignField: "eventId"
 })
-export default mongoose.model("Event", EventSchema);
+const Event = mongoose.model("Event", EventSchema);
+
+export default Event

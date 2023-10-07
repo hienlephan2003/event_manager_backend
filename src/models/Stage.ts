@@ -1,4 +1,15 @@
+import { InferSchemaType, Schema, Types } from "mongoose";
 import mongoose from "mongoose";
+export interface IStage {
+    organizerId: Types.ObjectId,
+stageName: string,
+seatNumber: Number,
+heightDimension: Number,
+widthDimension: Number,
+stageModel: Number[][],
+ticketMap: Map<Types.ObjectId,Types.ObjectId>,
+addressId: Types.ObjectId,
+}
 const StageSchema = new mongoose.Schema({
     organizerId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -33,4 +44,5 @@ const StageSchema = new mongoose.Schema({
 //     localField: "_id",
 //     foreignField: "stageId"
 // })
+
 export default mongoose.model("Stage", StageSchema);

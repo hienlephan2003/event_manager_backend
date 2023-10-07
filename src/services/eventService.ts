@@ -44,6 +44,7 @@ import ShowTime from "../models/ShowTime";
             }
         })
     }
+   
  }
 
 export default eventService

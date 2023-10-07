@@ -6,8 +6,8 @@ const showtimeController = {
     createShowTimes: async (req:Request, res:Response) =>{
         try{
             const data = req.body;
-            const newShowTimes = await showtimeService.createNewShowTimes( data )
-            res.status(200).json(newShowTimes)
+            // const newShowTimes = await showtimeService.createNewShowTimes( data )
+            // res.status(200).json(newShowTimes)
         }
         catch(e){
             res.status(500).json(e)
@@ -42,7 +42,7 @@ const showtimeController = {
     },
     getAllShowTimesOfEvent: async (req:Request, res:Response) =>{
         try{
-            const eventId = req.params.eventId;
+            const eventId:String = req.query.event_id as String;
             const listShowTimes = await showtimeService.getListShowTimesOfEvent(eventId);
             res.status(200).json(listShowTimes)                      
         }
