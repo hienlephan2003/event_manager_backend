@@ -9,6 +9,8 @@ const TicketTypeSchema = new mongoose.Schema({
     ticketColor: String,
     ticketImage: String,
     description: String,
+    quantity: {type: Number, required: true},
+    
     startSale: {type: Date, required: true},
     endSale: {type: Date, required: true},
     price: {type: Number, required: true}

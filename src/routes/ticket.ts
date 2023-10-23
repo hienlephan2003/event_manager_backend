@@ -3,6 +3,7 @@ const router = express.Router();
 import ticketController from "../controllers/ticketController";
 const {verifyToken} = require("../middlewares/verifyToken")
 router.get("/event", ticketController.getTicketTypesOfEvent);  
+router.get("/showtime", ticketController.getTicketTypesOfShowtime);  
 // CREATE TICKET 
 router.post("/sale", verifyToken ,ticketController.createTicketSales);
 

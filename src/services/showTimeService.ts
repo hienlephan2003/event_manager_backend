@@ -43,7 +43,7 @@ const showtimeService = {
             }
         })
     },
-    getListShowTimesOfEvent : (eventId:String) => {
+        getListShowTimesOfEvent : (eventId:String) => {
         return new Promise(async (resolve, reject) => {
             try{
                 const allShowTime = await ShowTime.find({

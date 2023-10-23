@@ -3,6 +3,7 @@ import TicketType from "../models/TicketType";
 import TicketSale from "../models/TicketSale";
 import { Request, Response } from "express"
 import Event from "../models/Event";
+import ShowTime from "../models/ShowTime";
 import ticketService from "../services/ticketService";
 const ticketController = {
     createTicketSales: async (req:Request, res:Response) =>{
@@ -69,6 +70,17 @@ const ticketController = {
             const listShowtime = event.showtimes.map((showtime: { _id: any; }) => showtime._id);
             const listTickets = await ticketService.getTicketTypesOfEvent(listShowtime);
             res.status(200).json(listTickets)                      
+        }
+        catch(err){
+            res.status(500).json(err)
+        }
+    },
+    getTicketTypesOfShowtime: async (req:Request, res:Response) =>{
+        try{
+            
+            const showtimeId:String = req.query.showtime_id as String;
+            const doc = await TicketType.find({showtimeId: showtimeId})
+            res.status(200).json(doc)                      
         }
         catch(err){
             res.status(500).json(err)

@@ -7,6 +7,7 @@ import addressService from "../services/addressService";
 import { AnyObject, HydratedDocument, IndexDefinition, Model } from "mongoose";
 import Stage from "../models/Stage";
 import TicketType from "../models/TicketType";
+
 // import { IEvent } from "./../models/Event";
 
 const eventController = {
@@ -62,7 +63,7 @@ const eventController = {
       res.status(500).json(err);
     }
   },
-  getEvent: async (req: Request, res: Response) => {
+  getDetailEvent: async (req: Request, res: Response) => {
     try {
       const doc = await Event.findById(req.params.id).populate([
         {
@@ -263,6 +264,27 @@ const eventController = {
       res.status(500).json(err);
     }
   },
+  getEventById: async (req: Request, res: Response) => {
+    try {
+      const event = await Event.find({
+        _id: req.params.id,
+       
+      }).populate([
+        {
+          path: "stageId",
+          populate: {
+            path: "addressId",
+          },
+        },
+        {
+          path: "organizerId",
+        },  'showtimes'
+      ])
+      res.status(200).json(event);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
   searchEvent: async (req: Request, res: Response) => {
     try {
       const query = req.query;
@@ -308,5 +330,6 @@ const eventController = {
       res.status(500).json(err);
     }
   },
+ 
 };
 export default eventController;
