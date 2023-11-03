@@ -4,11 +4,17 @@ import moment from "moment";
 import CryptoJS from "crypto-js";
 import axios from "axios";
 import { response } from "express";
+import {
+  PaymentDTO,
+  QueryRequest,
+  QueryType,
+  OrderRequest,
+} from "../types/payment.type";
 const paymentService = {
   createTransaction: async (payment: PaymentDTO) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const newPayment = new Payment(payment);
+        // const newPayment = new Payment(payment);
 
         const transID = Math.floor(Math.random() * 1000000);
 
@@ -39,11 +45,13 @@ const paymentService = {
           "|" +
           order.item;
         order.mac = CryptoJS.HmacSHA256(data1, config.key1).toString();
+        console.log("order" + JSON.stringify(order));
         axios
           .post(config.createorder, null, { params: order })
+          .then((result) => resolve(result.data))
           .catch((err) => reject(err));
 
-        resolve(newPayment);
+        //resolve(payment);
       } catch (error) {
         reject(error);
       }
@@ -54,7 +62,7 @@ const paymentService = {
       try {
         const postData = {
           appid: config.app_id,
-          apptransid: query.apptransid,
+          apptransid: query.appTransId,
           mac: "",
         };
 
@@ -96,3 +104,5 @@ const paymentService = {
     });
   },
 };
+
+export default paymentService;

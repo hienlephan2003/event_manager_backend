@@ -1,17 +1,48 @@
-import mongoose from "mongoose";
+import mongoose, { Model, Document } from "mongoose";
 
-
-const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
+const UserSchema = new mongoose.Schema(
+  {
+    email: { type: String, unique: true },
     password: { type: String, required: true },
     fullName: String,
-    phoneNumber: { type: String, unique: true },
+    phoneNumber: { type: String, required: true, unique: true },
+    imageUrl: String,
+    dateOfBirth: Date,
     role: {
-        type: String,
-        enum: ['admin', 'user', 'officer'],
-        required: true
-    }
-}, { timestamps: true });
+      type: String,
+      enum: ["admin", "user", "officer"],
+      required: true,
+    },
+    accountStatus: {
+      type: String,
+      enum: ["verified", "new", "ban"],
+    },
+  },
+  { timestamps: true }
+);
 
-export default mongoose.model("User", UserSchema);
+UserSchema.set("toObject", {
+  transform: function (doc, ret, options) {
+    delete ret.password; // Exclude 'password' field
+    return ret;
+  },
+});
+
+interface UserDocument extends Document {
+  email: string;
+  password: string;
+  fullName?: string;
+  phoneNumber: string;
+  imageUrl?: string;
+  dateOfBirth?: Date;
+  role: "admin" | "user" | "officer";
+  accountStatus?: "verified" | "new" | "ban";
+  createdAt: Date;
+  updatedAt: Date;
+}
+const User: Model<UserDocument> = mongoose.model<UserDocument>(
+  "User",
+  UserSchema
+);
+
+export { User, UserDocument };

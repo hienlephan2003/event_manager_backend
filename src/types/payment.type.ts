@@ -1,10 +1,10 @@
-type PaymentDTO = {
+export type PaymentDTO = {
   userId: string;
   bookingId: string;
   amount: number;
   embededInfo: string;
 };
-type OrderRequest = {
+export type OrderRequest = {
   appid: String;
   apptransid: String;
   appuser: String;
@@ -16,12 +16,12 @@ type OrderRequest = {
   bankcode: String;
   mac: String;
 };
-type PaymentInfo = {
+export type PaymentInfo = {
   transaction: string;
   amount: number;
   returnMessage: string;
 };
-type CreateOrderResponse = {
+export type CreateOrderResponse = {
   zptranstoken: string;
   orderurl: string;
   returncode: number;
@@ -30,12 +30,12 @@ type CreateOrderResponse = {
   transactionid: string;
   amount: number;
 };
-type QueryRequest = {
+export type QueryRequest = {
   userId: string;
-  apptransid: string;
+  appTransId: string;
   paymentId: string;
 };
-type QueryResponse = {
+export type QueryResponse = {
   amount: number;
   userId: string;
   returncode: number;
@@ -44,7 +44,7 @@ type QueryResponse = {
   returnmessage: string;
   transactionid: string;
 };
-enum QueryType {
+export enum QueryType {
   createOrder,
   refundOrder,
 }
