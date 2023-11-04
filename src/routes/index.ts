@@ -6,6 +6,7 @@ const ticketRouter = require('./ticket')
 const stageRouter = require('./stage')
 const addressRouter = require('./address')
 const myRouter = require('./my')
+const discountRouter = require('./discount')
 function Routes(app:Application) {
 app.use("/api", authRouter);
 app.use("/api/event", eventRouter);
@@ -14,5 +15,6 @@ app.use("/api/stage", stageRouter)
 app.use("/api/ticket", ticketRouter)
 app.use("/api/address", addressRouter)
 app.use("/api/my", myRouter)
+app.use("/api/discount", discountRouter)
 }
 module.exports = Routes;

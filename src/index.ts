@@ -8,11 +8,14 @@ const app:Application = express()
 const dotenv = require('dotenv')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
+const muilter = require('multer')
+const upload = muilter()
  const cors = require('cors')
 const routes = require('./routes')
 dotenv.config();
 app.use(cors({ credentials: true, origin: true })); 
 app.use(bodyParser.json())
+app.use(upload.array()); 
 app.use(bodyParser.urlencoded({extended: true}))
 app.get("/", (req:Request, res:Response):void => {
     res.send("Hello Typescript with Node.js!")
