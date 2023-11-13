@@ -13,41 +13,63 @@ import mongoose from "mongoose";
 
 //   }
 
-const EventSchema = new mongoose.Schema({
-    eventName: {type: String, required: true},
+const EventSchema = new mongoose.Schema(
+  {
+    eventName: { type: String, required: true },
     eventType: {
-        type: String, 
-        enum: ['liveMusic', 'theater', 'course', 'sport', 'community','nightlife', 'artculture'],
-        required: true},
+      type: String,
+      enum: [
+        "liveMusic",
+        "theater",
+        "course",
+        "sport",
+        "community",
+        "nightlife",
+        "artculture",
+      ],
+      required: true,
+    },
     organizerId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Organizer",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organizer",
+      required: true,
     },
-    coverImage: {type: String},
-    description: {type: String},
+    coverImage: { type: String },
+    description: { type: String },
     status: {
-        type: String,
-        enum: ['upcomming', '','canceled', 'occurred'],
-        default: 'upcomming'
+      type: String,
+      enum: ["upcomming", "", "canceled", "occurred"],
+      default: "upcomming",
     },
-    embeddedLinks : [{type: String}],
-    startTime: {type: Date, required: true},
+    embeddedLinks: [{ type: String }],
+    startTime: { type: Date, required: true },
     stageId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Stage",
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stage",
+      required: true,
     },
-}, {
+    moderators: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref:"User",
+          required: false,
+        },
+        role: { type: String, required: true },
+      },
+    ],
+  },
+  {
     toJSON: { virtuals: true }, // So `res.json()` and other `JSON.stringify()` functions include virtuals
     toObject: { virtuals: true }, // So `console.log()` and other functions that use `toObject()` include virtuals
-    timestamps: true}
+    timestamps: true,
+  }
 );
-EventSchema.virtual('showtimes', {
-    ref: "ShowTime",
-    localField: "_id",
-    foreignField: "eventId"
-})
+EventSchema.virtual("showtimes", {
+  ref: "ShowTime",
+  localField: "_id",
+  foreignField: "eventId",
+});
 const Event = mongoose.model("Event", EventSchema);
 
-export default Event
+export default Event;

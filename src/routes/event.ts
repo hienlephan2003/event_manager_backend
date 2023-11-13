@@ -22,6 +22,7 @@ router.get("/" ,eventController.getAllEvents);
 router.get("/showTime/:id", eventController.getAllShowTimesOfEvent);
 //SEARCH EVENT
 // router.get("/search/:key" , eventController.searchEvents);
-
+//ADD MODERATOR TO EVENT
+router.post("/:event_id/createModerator", eventController.createModerator)
 
 module.exports = router
