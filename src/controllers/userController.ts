@@ -2,7 +2,7 @@ const User = require("../models/User");
 const CryptoJs = require("crypto-js");
 import { Request, Response } from "express";
 const userController = {
-  updateUser: async (req: Request, res: Response) => {
+updateUser: async (req: Request, res: Response) => {
     if (req.body.password) {
       req.body.password = CryptoJs.AES.encrypt(
         req.body.password,
@@ -49,4 +49,21 @@ const userController = {
       res.status(500).json(er);
     }
   },
+  create: async (req:Request, res:Response) => {
+    req.body.password = CryptoJs.AES.encrypt(req.body.password, process.env.SECRET).toString()
+    const user = new User(req.body);
+    await user.save();
+    res.json(user)
+},
+getUserByEMail: async (req:Request, res:Response) =>{
+    try{
+        const email = req.query.email as String;
+        const user =  await User.findOne({email: email})
+        res.status(200).json(user)
+    }catch(er){
+        res.status(500).json(er)
+    }
+},
+
 };
+export default userController

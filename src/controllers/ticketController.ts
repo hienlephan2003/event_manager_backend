@@ -5,6 +5,7 @@ import { Request, Response } from "express"
 import Event from "../models/Event";
 import ShowTime from "../models/ShowTime";
 import ticketService from "../services/ticketService";
+import mongoose from "mongoose";
 const ticketController = {
     createTicketSales: async (req:Request, res:Response) =>{
         try{
@@ -80,6 +81,48 @@ const ticketController = {
             
             const showtimeId:String = req.query.showtime_id as String;
             const doc = await TicketType.find({showtimeId: showtimeId})
+            res.status(200).json(doc)                      
+        }
+        catch(err){
+            res.status(500).json(err)
+        }
+    },
+    //get ticket of ticket type
+    getSummaryType: async (req:Request, res:Response) =>{
+        try{
+            const showtimeId:any = req.query.showtime_id;
+           // const doc = await TicketSale.find({ticketTypeId: typeId});
+            const doc = await TicketType.aggregate([
+                {$match: {
+                    showtimeId: new mongoose.Types.ObjectId(showtimeId)
+                }},
+                {
+                    $lookup: {
+                 from: "ticketsales",
+                  localField: "_id",
+                  foreignField: "ticketTypeId",
+                  as: "ticketsales"
+                    }
+                },
+                {
+                    $project: {
+                        ticketName : 1,
+                        countTicket: {$size : '$ticketsales'},
+                        price:1,
+                        ticketsales:1
+                        
+                    }
+                },
+                {$project: {
+                    ticketName : 1,
+                    countTicket: 1,
+                    price: 1,
+                    totalPrice: {$multiply: ['$countTicket', '$price']},
+                    ticketsales:1
+                    
+                }}
+                
+            ])
             res.status(200).json(doc)                      
         }
         catch(err){

@@ -10,10 +10,10 @@ const TicketTypeSchema = new mongoose.Schema({
     ticketImage: String,
     description: String,
     quantity: {type: Number, required: true},
-    
     startSale: {type: Date, required: true},
     endSale: {type: Date, required: true},
-    price: {type: Number, required: true}
+    price: {type: Number, required: true},
+    discounts: [{type: mongoose.Schema.Types.ObjectId, ref:'Discount'}]
 }, {timestamps: true}
 );
 

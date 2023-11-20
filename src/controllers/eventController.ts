@@ -4,9 +4,7 @@ import { Request, Response } from "express";
 import organizerService from "../services/organizerService";
 import showTimeService from "../services/showTimeService";
 import addressService from "../services/addressService";
-import { AnyObject, HydratedDocument, IndexDefinition, Model } from "mongoose";
-import Stage from "../models/Stage";
-import TicketType from "../models/TicketType";
+import { ObjectId } from "mongodb";
 
 // import { IEvent } from "./../models/Event";
 
@@ -14,7 +12,6 @@ const eventController = {
   createEvent: async (req: Request, res: Response) => {
     try {
       const event = req.body;
-      //const user = req.user;
       //create new organizer if not exist
       if (!event.organizerId || !event.organizerId.trim()) {
         if (!event.organizer) {
@@ -75,9 +72,8 @@ const eventController = {
         {
           path: "organizerId",
         },
-        'showtimes'
+        "showtimes",
       ]);
-    
 
       // const eventDoc = await Event.aggregate(
       //   [
@@ -111,8 +107,8 @@ const eventController = {
       //     {
       //       $unwind: {
       //         path: "$address",
-      //         preserveNullAndEmptyArrays: true  
-      //       } 
+      //         preserveNullAndEmptyArrays: true
+      //       }
       //     },
       //     {
       //       $lookup: {
@@ -125,8 +121,8 @@ const eventController = {
       //     {
       //       $unwind: {
       //         path: "$organizer",
-      //         preserveNullAndEmptyArrays: true  
-      //       } 
+      //         preserveNullAndEmptyArrays: true
+      //       }
       //     },
       //     {
       //       $lookup: {
@@ -136,7 +132,7 @@ const eventController = {
       //         as: "showtimes",
       //       },
       //     },
-          
+
       //     {
       //       $project: {
       //         _id: 1,
@@ -150,64 +146,55 @@ const eventController = {
       //     },
       //   ]
       //  )
-        //res.status(200).json(eventDoc)
-        const months = [
-          'January',
-          'February',
-          'March',
-          'April',
-          'May',
-          'June',
-          'July',
-          'August',
-          'September',
-          'October',
-          'November',
-          'December',
+      //res.status(200).json(eventDoc)
+      const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
       ];
-  
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const eventDoc:any = doc;
-        const stage: any = eventDoc.stageId;
-        const organizer: any = eventDoc.organizerId;
-        const time: any = eventDoc.showtimes[0].startAt;
-        const address = stage.addressId;
-        const event: any = { ...eventDoc };
-      
-        const ev = event._doc;
-        ev.showtimes = eventDoc.showtimes;
-        ev.hours = ("0" + time.getHours()).slice(-2);
-        ev.minutes = ("0" + time.getMinutes()).slice(-2);
-        ev.month = months[time.getMonth()];
-        ev.year = time.getFullYear();
-        ev.day = days[time.getDay()];
-        ev.date = time.getDate();
-        ev.startTime = `${ev.day}, ${ev.date} ${ev.month} ${ev.year} (${ev.hours}:${ev.minutes})`;
-        const data = {
-          address: `${address.ward}, ${address.district}, ${address.province}`,
-          stage: stage.stageName,
-          organizer: organizer,
-          
-          ...ev,
-        };
-        res.status(200).json(data);
-      
 
-      //test.address = binh.addressId;
+      const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      const eventDoc: any = doc;
+      const stage: any = eventDoc.stageId;
+      const organizer: any = eventDoc.organizerId;
+      const time: any = eventDoc.showtimes[0].startAt;
+      const address = stage.addressId;
+      const event: any = { ...eventDoc };
 
-      // stage?.populate('addressId').then((address) => {console.log(address);})
+      const ev = event._doc;
+      ev.showtimes = eventDoc.showtimes;
+      ev.hours = ("0" + time.getHours()).slice(-2);
+      ev.minutes = ("0" + time.getMinutes()).slice(-2);
+      ev.month = months[time.getMonth()];
+      ev.year = time.getFullYear();
+      ev.day = days[time.getDay()];
+      ev.date = time.getDate();
+      ev.startTime = `${ev.day}, ${ev.date} ${ev.month} ${ev.year} (${ev.hours}:${ev.minutes})`;
+      const data = {
+        address: `${address.ward}, ${address.district}, ${address.province}`,
+        stage: stage.stageName,
+        organizer: organizer,
 
-      // Stage.findById('65112b80264d3ec617c65178').populate('addressId').then((stage) => {
-      //     console.log(stage)
-      // // stage?.populate('addressId').then((address) => {console.log(address);})
-      // })
-
-      //    const stage = await Stage.findById(event?.stageId);
-      //    console.log(stage)
-
-      // const stage:any= event?.stageId
-
-      //  console.log(stage)
+        ...ev,
+      };
+      res.status(200).json(data);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -223,33 +210,44 @@ const eventController = {
             as: "showtimes",
           },
         },
-
         {
-          $project: {
-            _id: 1,
-            eventName: 1,
-            eventType: 1,
-            coverImage:1,
-            showtimes: {
-              $map: {
-                input: "$showtimes",
-                as: "item",
-                in: {
-                  startAt: {
-                    $dateToString: {
-                      date: "$$item.startAt",
-                      format: "%d/%m/%Y",
-                    },
-                  },
-                },
-              },
-            },
+          $lookup: {
+            from: "stages",
+            localField: "stageId",
+            foreignField: "_id",
+            as: "stage",
+          },
+        },
+        {
+          $unwind: {
+            path: "$stage",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "addresses",
+            localField: "stage.addressId",
+            foreignField: "_id",
+            as: "address",
+          },
+        },
+        {
+          $unwind: {
+            path: "$address",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "tickettypes",
+            localField: "showtimes._id",
+            foreignField: "showtimeId",
+            as: "ticketTypes",
           },
         },
       ]);
       res.status(200).json(listEvent);
-    
-
     } catch (err) {
       res.status(500).json(err);
     }
@@ -266,9 +264,8 @@ const eventController = {
   },
   getEventById: async (req: Request, res: Response) => {
     try {
-      const event = await Event.find({
+      const event = await Event.findOne({
         _id: req.params.id,
-       
       }).populate([
         {
           path: "stageId",
@@ -278,8 +275,10 @@ const eventController = {
         },
         {
           path: "organizerId",
-        },  'showtimes'
-      ])
+        },
+        "showtimes",
+        "moderators.user",
+      ]);
       res.status(200).json(event);
     } catch (err) {
       res.status(500).json(err);
@@ -330,6 +329,178 @@ const eventController = {
       res.status(500).json(err);
     }
   },
- 
+  filterEvent: async (req: Request, res: Response) => {
+    const provinceRes = req.query.address;
+    const startTime = req.query.start as string;
+    const endTime = req.query.end as string;
+    const priceQuery = req.query.price || "both";
+    const type = req.query.types as string[];
+
+    let typeRes: string[];
+    if (type === undefined) typeRes = [];
+    else if (!Array.isArray(type)) typeRes = [type];
+    else typeRes = type;
+    console.log(typeRes);
+    const listEvent = await Event.aggregate([
+      {
+        $set: {
+          endTime: endTime,
+          priceQuery: priceQuery,
+          types: typeRes,
+          provinceRes: provinceRes,
+        },
+      },
+      {
+        $lookup: {
+          from: "stages",
+          localField: "stageId",
+          foreignField: "_id",
+          as: "stage",
+        },
+      },
+      {
+        $unwind: {
+          path: "$stage",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "addresses",
+          localField: "stage.addressId",
+          foreignField: "_id",
+          as: "address",
+        },
+      },
+      {
+        $unwind: {
+          path: "$address",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              provinceRes: null,
+              "address.province": {
+                $ne: "",
+              },
+            },
+            {
+              provinceRes: "Other locations",
+              "address.province": {
+                $nin: ["Ho Chi Minh", "Ha Noi"],
+              },
+            },
+            {
+              "address.province": provinceRes,
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "showtimes",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "showtimes",
+        },
+      },
+
+      {
+        $match: {
+          $or: [
+            {
+              endTime: undefined,
+              "showtimes.startAt": {
+                $gte: new Date(startTime),
+              },
+            },
+            {
+              "showtimes.startAt": {
+                $gte: new Date(startTime),
+                $lt: new Date(endTime),
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "showtimes._id",
+          foreignField: "showtimeId",
+          as: "ticketTypes",
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              priceQuery: "Free",
+              "ticketTypes.price": 0,
+            },
+            {
+              priceQuery: "Paid",
+              "ticketTypes.price": {
+                $gt: 0,
+              },
+            },
+            {
+              priceQuery: "both",
+              "ticketTypes.price": {
+                $gte: 0,
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $match: {
+          $or: [
+            {
+              types: [],
+              eventType: {
+                $nin: typeRes,
+              },
+            },
+            {
+              eventType: {
+                $in: typeRes,
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    res.json(listEvent);
+  },
+  createModerator: async (req: Request, res: Response) => {
+    try {
+      const event = await Event.findById(req.params.event_id).populate(
+        "moderators"
+      );
+      const userId = req.body.userId as string;
+      const userObj = new ObjectId(userId);
+      if (event !== null) {
+        const listModerator = event.moderators as any[];
+        await event.updateOne({
+          moderators: [
+            ...listModerator,
+            {
+              user: userObj,
+              role: req.body.role,
+            },
+          ],
+        });
+        res.status(200).json(event);
+      } else res.status(404).json();
+    } catch (e) {
+      res.status(500).json(e);
+    }
+  },
 };
 export default eventController;
