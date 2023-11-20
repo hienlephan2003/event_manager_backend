@@ -4,16 +4,6 @@ import { Request, Response } from "express";
 import organizerService from "../services/organizerService";
 import showTimeService from "../services/showTimeService";
 import addressService from "../services/addressService";
-import {
-  AnyObject,
-  HydratedDocument,
-  IndexDefinition,
-  Model,
-  Types,
-} from "mongoose";
-import Stage from "../models/Stage";
-import TicketType from "../models/TicketType";
-import User from "../models/User";
 import { ObjectId } from "mongodb";
 
 // import { IEvent } from "./../models/Event";
@@ -220,27 +210,40 @@ const eventController = {
             as: "showtimes",
           },
         },
-
         {
-          $project: {
-            _id: 1,
-            eventName: 1,
-            eventType: 1,
-            coverImage: 1,
-            showtimes: {
-              $map: {
-                input: "$showtimes",
-                as: "item",
-                in: {
-                  startAt: {
-                    $dateToString: {
-                      date: "$$item.startAt",
-                      format: "%d/%m/%Y",
-                    },
-                  },
-                },
-              },
-            },
+          $lookup: {
+            from: "stages",
+            localField: "stageId",
+            foreignField: "_id",
+            as: "stage",
+          },
+        },
+        {
+          $unwind: {
+            path: "$stage",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "addresses",
+            localField: "stage.addressId",
+            foreignField: "_id",
+            as: "address",
+          },
+        },
+        {
+          $unwind: {
+            path: "$address",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "tickettypes",
+            localField: "showtimes._id",
+            foreignField: "showtimeId",
+            as: "ticketTypes",
           },
         },
       ]);
@@ -274,8 +277,7 @@ const eventController = {
           path: "organizerId",
         },
         "showtimes",
-        "moderators.user"
-        
+        "moderators.user",
       ]);
       res.status(200).json(event);
     } catch (err) {
@@ -327,6 +329,155 @@ const eventController = {
       res.status(500).json(err);
     }
   },
+  filterEvent: async (req: Request, res: Response) => {
+    const provinceRes = req.query.address;
+    const startTime = req.query.start as string;
+    const endTime = req.query.end as string;
+    const priceQuery = req.query.price || "both";
+    const type = req.query.types as string[];
+
+    let typeRes: string[];
+    if (type === undefined) typeRes = [];
+    else if (!Array.isArray(type)) typeRes = [type];
+    else typeRes = type;
+    console.log(typeRes);
+    const listEvent = await Event.aggregate([
+      {
+        $set: {
+          endTime: endTime,
+          priceQuery: priceQuery,
+          types: typeRes,
+          provinceRes: provinceRes,
+        },
+      },
+      {
+        $lookup: {
+          from: "stages",
+          localField: "stageId",
+          foreignField: "_id",
+          as: "stage",
+        },
+      },
+      {
+        $unwind: {
+          path: "$stage",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "addresses",
+          localField: "stage.addressId",
+          foreignField: "_id",
+          as: "address",
+        },
+      },
+      {
+        $unwind: {
+          path: "$address",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              provinceRes: null,
+              "address.province": {
+                $ne: "",
+              },
+            },
+            {
+              provinceRes: "Other locations",
+              "address.province": {
+                $nin: ["Ho Chi Minh", "Ha Noi"],
+              },
+            },
+            {
+              "address.province": provinceRes,
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "showtimes",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "showtimes",
+        },
+      },
+
+      {
+        $match: {
+          $or: [
+            {
+              endTime: undefined,
+              "showtimes.startAt": {
+                $gte: new Date(startTime),
+              },
+            },
+            {
+              "showtimes.startAt": {
+                $gte: new Date(startTime),
+                $lt: new Date(endTime),
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "showtimes._id",
+          foreignField: "showtimeId",
+          as: "ticketTypes",
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              priceQuery: "Free",
+              "ticketTypes.price": 0,
+            },
+            {
+              priceQuery: "Paid",
+              "ticketTypes.price": {
+                $gt: 0,
+              },
+            },
+            {
+              priceQuery: "both",
+              "ticketTypes.price": {
+                $gte: 0,
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $match: {
+          $or: [
+            {
+              types: [],
+              eventType: {
+                $nin: typeRes,
+              },
+            },
+            {
+              eventType: {
+                $in: typeRes,
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    res.json(listEvent);
+  },
   createModerator: async (req: Request, res: Response) => {
     try {
       const event = await Event.findById(req.params.event_id).populate(
@@ -335,12 +486,15 @@ const eventController = {
       const userId = req.body.userId as string;
       const userObj = new ObjectId(userId);
       if (event !== null) {
-        const listModerator = event.moderators as any[]
+        const listModerator = event.moderators as any[];
         await event.updateOne({
-          moderators: [...listModerator, {
-            user: userObj,
-            role: req.body.role 
-          }],
+          moderators: [
+            ...listModerator,
+            {
+              user: userObj,
+              role: req.body.role,
+            },
+          ],
         });
         res.status(200).json(event);
       } else res.status(404).json();
