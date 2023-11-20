@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["admin", "user", "officer"],
       required: true,
+      default: "user",
     },
     accountStatus: {
       type: String,

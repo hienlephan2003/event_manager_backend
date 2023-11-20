@@ -2,8 +2,9 @@ import express from "express";
 const router = express.Router();
 import authController from "../controllers/authController";
 // REGISTRATION
-router.post("/register", authController.registerUser);
-router.post("/register/otp", authController.verifyOtp);
+router.post("/checkPhoneNumber", authController.checkPhoneNumber);
+router.post("/register", authController.register);
+router.post("/verifyOtp", authController.verifyOtp);
 // LOGIN
 router.post("/login", authController.loginUser);
 

@@ -16,34 +16,45 @@ const authController = {
     try {
       const saveUser = await newUser.save();
 
-      res.status(201).json(saveUser);
+      return res.status(201).json(saveUser);
     } catch (err) {
-      res.status(500).json(err);
+      return res.status(500).json(err);
     }
   },
-  registerUser: async (req: Request, res: Response) => {
+  checkPhoneNumber: async (req: Request, res: Response) => {
     try {
       const phoneNumber = req.body.phoneNumber;
+      if (!phoneNumber) {
+        return res.status(404).json("Missing required field");
+      }
+      console.log(phoneNumber);
       const user = await User.findOne({ phoneNumber: phoneNumber });
       if (user != null) {
-        res.status(403).json({
+        return res.status(201).json({
           message: "This phone number is exists in db, forward to login page",
         });
       }
-      const otp = await otpService.sendOTP(phoneNumber);
-      res.status(201).json({ message: "success" });
+      return res.status(200).json({ message: "success" });
     } catch (err) {
-      res.status(500).json(err);
+      return res.status(500).json(err);
     }
   },
-  // forgotPassword: async (request: Request, response: Response) => {
-  //   try{
-  //     const generateToken =
-  //   }
-  //   cacth(err){
-  //     res.status(500).json(err);
-  //   }
-  // },
+  register: async (req: Request, res: Response) => {
+    try {
+      const phoneNumber = req.body.phoneNumber;
+      console.log(phoneNumber);
+      const user = await User.findOne({ phoneNumber: phoneNumber });
+      if (phoneNumber != null && user != null) {
+        return res.status(201).json({
+          message: "This phone number is exists in db, forward to login page",
+        });
+      }
+      const otp = await otpService.sendOTP("84" + phoneNumber.substring(1));
+      return res.status(200).json({ message: "success" });
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  },
   recoveryPassword: async (request: Request, response: Response) => {
     try {
       const userId = request.body.user.id;
@@ -55,28 +66,11 @@ const authController = {
         ).toString(),
       });
       await user?.save();
-      response.status(200).json("success");
+      return response.status(200).json("success");
     } catch (err) {
-      response.status(500).json(err);
+      return response.status(500).json(err);
     }
   },
-  // sendForgotPasswordMessage: async (request: Request, response: Response) => {
-  //   try {
-  //     const accountSid = "AC7f071b9da3b2b18765f4a65a129670f8";
-  //     const authToken = "[AuthToken]";
-  //     const client = require("twilio")(accountSid, authToken);
-
-  //     client.messages
-  //       .create({
-  //         to: "+84862622563",
-  //       })
-  //       .then((message:any) => console.log(message.sid))
-  //       .done();
-  //     response.status(200).json("success");
-  //   } catch (err) {
-  //     response.status(500).json(err);
-  //   }
-  // },
   setPassword: async (request: Request, response: Response) => {
     try {
       const phoneNumber = request.body.phoneNumber;
@@ -85,7 +79,7 @@ const authController = {
         phoneNumber: phoneNumber,
       });
       if (findUser?.accountStatus != "new") {
-        response.status(403).json("this account is not a new one");
+        return response.status(403).json("this account is not a new one");
       }
       const updateUser = await User.findOneAndUpdate(
         { phoneNumber: phoneNumber },
@@ -97,35 +91,43 @@ const authController = {
         }
       );
       await updateUser?.save();
-      response.status(200).json("success");
+      return response.status(200).json("success");
     } catch (err) {
-      response.status(500).json(err);
+      return response.status(500).json(err);
     }
   },
 
   verifyOtp: async (req: Request, res: Response) => {
     try {
       const phoneNumber = req.body.phoneNumber;
+      const password = req.body.password;
       const otp = req.body.otp;
-      const result = await otpService.verifyOTP(phoneNumber, otp);
+      const result = await otpService.verifyOTP(
+        "84" + phoneNumber.substring(1),
+        otp
+      );
       if (result == "approved") {
         const newUser = new User({
           phoneNumber: phoneNumber,
+          password: CryptoJs.AES.encrypt(
+            password,
+            process.env.SECRET
+          ).toString(),
         });
         await newUser.save();
-      }
-      res.status(201).json("approved");
+        return res.status(200).json("approved");
+      } else return res.status(403).json("disapproved");
     } catch (err) {
-      res.status(500).json("disapproved");
+      console.log(err);
+      return res.status(500).json("disapproved");
     }
   },
   loginUser: async (req: Request, res: Response) => {
     try {
-      const user = await User.findOne({ username: req.body.username });
+      const user = await User.findOne({ phoneNumber: req.body.phoneNumber });
 
       if (!user) {
-        res.status(401).json("Wrong Login Details");
-        return;
+        return res.status(401).json("Wrong Login Details");
       }
 
       const descryptedPass = CryptoJs.AES.decrypt(
@@ -134,8 +136,8 @@ const authController = {
       );
       const depassword = descryptedPass.toString(CryptoJs.enc.Utf8);
 
-      depassword !== req.body.password &&
-        res.status(401).json("Wrong password");
+      if (depassword !== req.body.password)
+        return res.status(401).json("Wrong password");
 
       const userToken = jwt.sign(
         {
@@ -146,10 +148,10 @@ const authController = {
         { expiresIn: "21d" }
       );
       const userObj = user.toObject();
-      res.status(200).json({ ...userObj, userToken });
+      return res.status(200).json({ ...userObj, userToken });
     } catch (e) {
       console.log(e);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   },
 };
