@@ -5,6 +5,7 @@ import organizerService from "../services/organizerService";
 import showTimeService from "../services/showTimeService";
 import addressService from "../services/addressService";
 import { ObjectId } from "mongodb";
+import { Region, SeatsioClient } from "seatsio";
 
 // import { IEvent } from "./../models/Event";
 
@@ -201,6 +202,8 @@ const eventController = {
   },
   getAllEvents: async (req: Request, res: Response) => {
     try {
+      // let client = new SeatsioClient(Region.OC(), 'ce25e325-9589-4562-9c5c-08f64b152d6b');
+      // await client.events.book('b4eecd68-248b-4a5b-808c-1da15468515a', ['G-5','G-6']);
       const listEvent = await Event.aggregate([
         {
           $lookup: {

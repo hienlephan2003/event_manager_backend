@@ -29,7 +29,8 @@
     "mongodb": "^6.1.0",
     "mongoose": "^7.5.2",
     "multer": "^1.4.5-lts.1",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "seatsio": "^81.4.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.18",
