@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema(
     fullName: String,
     phoneNumber: { type: String, required: true, unique: true },
     imageUrl: String,
+    identifyCardNumber: String,
     dateOfBirth: Date,
     role: {
       type: String,
@@ -36,6 +37,7 @@ interface UserDocument extends Document {
   phoneNumber: string;
   imageUrl?: string;
   dateOfBirth?: Date;
+
   role: "admin" | "user" | "officer";
   accountStatus?: "verified" | "new" | "ban";
   createdAt: Date;

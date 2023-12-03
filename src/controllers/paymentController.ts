@@ -9,10 +9,11 @@ const paymentController = {
         bookingId: request.body.bookingId ?? "",
         amount: request.body.amount ?? 50000,
         embededInfo: request.body.embededInfo ?? "",
+        redirectUrl: "http://localhost:3000/events/65105f66641996e970f130a0/",
       };
       paymentService.createTransaction(payment).then((data) => {
         console.log(data);
-        // response.status(200).json(data);
+        response.status(200).json(data);
       });
     } catch (err) {
       response.status(500).json(err);

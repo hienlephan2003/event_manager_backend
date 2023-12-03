@@ -24,7 +24,9 @@ const paymentService = {
           appuser: payment.userId,
           apptime: Date.now().toString(),
           item: JSON.stringify([{}]),
-          embeddata: JSON.stringify([{}]),
+          embeddata: JSON.stringify({
+            redirecturl: payment.redirectUrl,
+          }),
           amount: payment.amount,
           description: payment.embededInfo,
           mac: "",

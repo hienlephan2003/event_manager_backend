@@ -1,8 +1,9 @@
-const User = require("../models/User");
+const { User, UserDocument } = require("../models/User");
 const CryptoJs = require("crypto-js");
+import bodyParser from "body-parser";
 import { Request, Response } from "express";
 const userController = {
-updateUser: async (req: Request, res: Response) => {
+  updateUser: async (req: Request, res: Response) => {
     if (req.body.password) {
       req.body.password = CryptoJs.AES.encrypt(
         req.body.password,
@@ -10,17 +11,22 @@ updateUser: async (req: Request, res: Response) => {
       ).toString();
     }
     try {
+      if (req.body.user.id !== req.body._id) {
+        console.log(req.body);
+        return res
+          .status(403)
+          .json("You are restricted from performing this operation");
+      }
       const UpdateUser = await User.findByIdAndUpdate(
-        req.body.userId,
-        {
-          $set: req.body,
-        },
+        req.body.user.id,
+        req.body,
         { new: true }
       );
       const { password, __v, createdAt, ...others } = UpdateUser._doc;
 
       res.status(200).json(others);
     } catch (err) {
+      console.log(err);
       res.status(500).json({ err });
     }
   },
@@ -49,21 +55,23 @@ updateUser: async (req: Request, res: Response) => {
       res.status(500).json(er);
     }
   },
-  create: async (req:Request, res:Response) => {
-    req.body.password = CryptoJs.AES.encrypt(req.body.password, process.env.SECRET).toString()
+  create: async (req: Request, res: Response) => {
+    req.body.password = CryptoJs.AES.encrypt(
+      req.body.password,
+      process.env.SECRET
+    ).toString();
     const user = new User(req.body);
     await user.save();
-    res.json(user)
-},
-getUserByEMail: async (req:Request, res:Response) =>{
-    try{
-        const email = req.query.email as String;
-        const user =  await User.findOne({email: email})
-        res.status(200).json(user)
-    }catch(er){
-        res.status(500).json(er)
+    res.json(user);
+  },
+  getUserByEMail: async (req: Request, res: Response) => {
+    try {
+      const email = req.query.email as String;
+      const user = await User.findOne({ email: email });
+      res.status(200).json(user);
+    } catch (er) {
+      res.status(500).json(er);
     }
-},
-
+  },
 };
-export default userController
+export default userController;

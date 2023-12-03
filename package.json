@@ -18,8 +18,10 @@
   },
   "homepage": "https://github.com/hienlephan2003/event_manager_backend#readme",
   "dependencies": {
+    "appwrite": "^13.0.1",
     "axios": "^1.6.0",
     "body-parser": "^1.20.2",
+    "connect-multiparty": "^2.2.0",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "date-fns": "^2.30.0",
@@ -32,7 +34,10 @@
     "mongoose": "^7.5.2",
     "multer": "^1.4.5-lts.1",
     "multer-gridfs-storage": "^5.0.2",
+    "node-appwrite": "^11.1.0",
     "nodemon": "^3.0.1",
+    "seatsio": "^81.4.0",
+    "socket.io": "^4.7.2",
     "twilio": "^4.19.0"
   },
   "devDependencies": {
