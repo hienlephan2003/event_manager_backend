@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, Types } from "mongoose";
+    import { InferSchemaType, Schema, Types } from "mongoose";
 import mongoose from "mongoose";
 export interface IStage {
     organizerId: Types.ObjectId,

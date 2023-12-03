@@ -4,49 +4,6 @@ const myController = {
     
     getAllEvents: async (req:Request, res:Response) =>{
         try{
-          //  const events = await Event.aggregate(
-          //   [
-          //     {
-          //       $lookup: {
-          //         from: "stages",
-          //         localField: "stageId",
-          //         foreignField: "_id",
-          //         as: "stage"
-          //       }
-          //     },
-          //     {
-          //       $unwind: {
-          //         path: "$stage",
-          //         preserveNullAndEmptyArrays: true
-          //       }
-          //     },
-          //     {
-          //       $lookup: {
-          //         from: "addresses",
-          //         localField: "stage.addressId",
-          //         foreignField: "_id",
-          //         as: "address"
-          //       }
-          //     },
-          //     {
-          //       $unwind: {
-          //         path: "$address",
-          //         preserveNullAndEmptyArrays: true  
-          //       } 
-          //     },
-          //     {
-          //       $project: {
-          //         _id: 0,
-          //         startTime: {$dateToString: {date: "$startTime", format:"%d:%m:%Y"}},
-          //         address: {$concat: ["$address.ward", ', ', "$address.district", ", ","$address.province"]},
-          //         coverImage:1,
-          //         eventName:1
-
-          //       }
-          //     }
-          //   ]
-          //  )
-         
           const events = await Event.find({
             organizerId: req.params.id,
            
