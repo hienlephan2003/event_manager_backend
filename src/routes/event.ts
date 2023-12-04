@@ -7,7 +7,7 @@ import eventController from "../controllers/eventController";
 router.post("/", verifyToken ,eventController.createEvent);
 router.get('/filter', eventController.filterEvent);
 router.get('/search', eventController.searchEvent);
-
+router.get('/recommended',eventController.recommendedEvent);
 
 //UPDATE EVENT
 router.put("/:id", verifyToken ,eventController.updateEvent);

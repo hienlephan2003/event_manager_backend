@@ -6,7 +6,7 @@ import showTimeService from "../services/showTimeService";
 import addressService from "../services/addressService";
 import { ObjectId } from "mongodb";
 import { Region, SeatsioClient } from "seatsio";
-
+import TicketSale from "../models/TicketSale";
 // import { IEvent } from "./../models/Event";
 
 const eventController = {
@@ -504,6 +504,52 @@ const eventController = {
     } catch (e) {
       res.status(500).json(e);
     }
+  },
+  recommendedEvent: async (req: Request, res: Response) => {
+    const result = await Event.aggregate([
+      {
+        $lookup: {
+          from: "showtimes",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "showtimes",
+        },
+      },
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "showtimes._id",
+          foreignField: "showtimeId",
+          as: "ticketTypes",
+        },
+      },
+      {
+        $lookup: {
+          from: "ticketsales",
+          localField: "ticketTypes._id",
+          foreignField: "ticketTypeId",
+          as: "tickets",
+        },
+      },
+      {
+        $set: {
+          count: {
+            $size: "$tickets",
+          },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+          
+        },
+      },
+
+      {
+        $limit: 5
+      },
+    ]);
+    res.json(result);
   },
 };
 export default eventController;
