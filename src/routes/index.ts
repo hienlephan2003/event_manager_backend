@@ -11,6 +11,7 @@ const discountRouter = require("./discount");
 const userRouter = require("./user");
 const chartRouter = require("./chart");
 const imageRouter = require("./image");
+const bookingRouter = require("./booking");
 function Routes(app: Application) {
   app.use("/api", authRouter);
   app.use("/api/event", eventRouter);
@@ -24,5 +25,6 @@ function Routes(app: Application) {
   app.use("/api/user", userRouter);
   app.use("/api/chart", chartRouter);
   app.use("/api/image", imageRouter);
+  app.use("/api/booking", bookingRouter);
 }
 module.exports = Routes;
