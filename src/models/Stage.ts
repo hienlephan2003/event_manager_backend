@@ -1,7 +1,7 @@
     import { InferSchemaType, Schema, Types } from "mongoose";
 import mongoose from "mongoose";
 export interface IStage {
-    organizerId: Types.ObjectId,
+organizerId: Types.ObjectId,
 stageName: string,
 seatNumber: Number,
 heightDimension: Number,
