@@ -541,7 +541,6 @@ const eventController = {
       {
         $sort: {
           count: -1,
-          
         },
       },
 
