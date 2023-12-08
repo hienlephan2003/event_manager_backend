@@ -1,10 +1,11 @@
 const { User, UserDocument } = require("../models/User");
-const http = require("http");
+import * as mailgen from "mailgen";
 const CryptoJs = require("crypto-js");
 const sendEmail = require("../utils/sendEmail");
 import axios from "axios";
 import bodyParser from "body-parser";
 import { Request, Response } from "express";
+import Event from "../models/Event";
 
 const userController = {
   updateUser: async (req: Request, res: Response) => {
@@ -82,14 +83,37 @@ const userController = {
     const userId = req.body.userId;
     const role = req.body.role;
     const user = await User.findById(userId);
+    const event = await Event.findById(eventId);
     const email = user.email;
+    const mailGenerator = new mailgen.default({
+      theme: "default",
+      product: {
+        name: "Mailgen",
+        link: "https://mailgen.js/",
+      },
+    });
     const url = `${process.env.BASE_URL}api/user/${eventId}/moderator?userId=${userId}&role=${role}`;
+    const body = {
+      body: {
+        name: user.username,
+        intro: `Do you want to be the moderator of event ${event?.eventName}?`,
+        action: {
+          instructions: "To be the moderator of this event, please click here:",
+          button: {
+            color: "#22BC66", // Optional action button color
+            text: "Confirm",
+            link: url,
+          },
+        },
+      },
+    };
+    let mail = mailGenerator.generate(body);
+
     try {
-      await sendEmail(email, "Confirm moderator email", url);
-      res.json("send email successfully")
-    }
-    catch (err) {
-      throw err
+      await sendEmail(email, "Confirm moderator email", mail);
+      res.json("send email successfully");
+    } catch (err) {
+      throw err;
     }
   },
   acceptModerator: async (req: Request, res: Response) => {
