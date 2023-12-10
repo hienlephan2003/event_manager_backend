@@ -5,8 +5,6 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const routes = require("./routes");
-const multer = require("multer");
-const Grid = require("gridfs-stream");
 
 dotenv.config();
 app.use(cors({ credentials: true, origin: true }));

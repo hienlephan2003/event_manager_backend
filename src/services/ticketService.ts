@@ -1,40 +1,13 @@
-import TicketSale from "../models/TicketSale";
 import TicketType from "../models/TicketType";
 const ticketService = {
-  createTicketSales: (ticketSales: any) => {
+  createTicketTypes: (ticketTypes: any, eventId: string) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const ticketTypesInfo = [];
-        for (const ticketSale of ticketSales) {
-          const newTicketSale = new TicketSale(ticketSale);
-          const saveTicket: any = await newTicketSale.save(); // Use newTicketType instead of newTicket
-
-          const { __v, createdAt, updatedAt, ...newTicketInfo } =
-            saveTicket?._doc;
-
-          ticketTypesInfo.push(newTicketInfo);
-        }
-        resolve(ticketTypesInfo);
-      } catch (e) {
-        console.log(e);
-        reject(e);
-      }
-    });
-  },
-
-  createTicketTypes: (ticketTypes: any) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const ticketTypesInfo = [];
-        for (const ticketType of ticketTypes) {
-          const newTicketType = new TicketType(ticketType);
-          const saveTicket = await newTicketType.save(); // Use newTicketType instead of newTicket
-
-          // const { __v, createdAt, updatedAt, ...newTicketInfo } = saveTicket._doc;
-
-          // ticketTypesInfo.push(newTicketInfo);
-        }
-        //  resolve(ticketTypesInfo);
+        ticketTypes.forEach((ticketType: any) => {
+          ticketType.eventId = eventId;
+        });
+        const newTickets = await TicketType.insertMany(ticketTypes);
+        resolve(newTickets);
       } catch (e) {
         reject(e);
       }

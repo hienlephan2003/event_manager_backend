@@ -5,4 +5,5 @@ const { verifyToken } = require("../middlewares/verifyToken");
 
 router.post("/holdTickets", bookingController.newHoldTickets);
 router.get("/holdToken", verifyToken, bookingController.getHoldToken);
+router.post("/newBooking", verifyToken, bookingController.createNewBooking);
 module.exports = router;

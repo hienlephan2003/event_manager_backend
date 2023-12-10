@@ -49,17 +49,24 @@ const bookingService = {
   findHoldToken: (userId: string, eventKey: string) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const token = await TicketHoldToken.findOne({ userId, eventKey });
+        const token = await TicketHoldToken.findOne({
+          userId,
+          eventKey,
+        });
         if (token) {
-          if (token.expiresAt > new Date()) {
-            resolve({ ...token, session: "continue" });
+          const tockenDoc = (token as any)._doc;
+          if (tockenDoc.expiresAt > new Date()) {
+            console.log("this 1");
+            resolve({ ...tockenDoc, session: "continue" });
           } else {
+            console.log("this 2");
             const newholdToken = await client.holdTokens.create();
             token.holdToken = newholdToken.holdToken;
             token.expiresAt = newholdToken.expiresAt;
             token.expiresInSeconds = newholdToken.expiresInSeconds;
             token.save();
-            resolve({ ...token, session: "continue" });
+            const tokenDoc = (token as any)._doc;
+            resolve({ ...tokenDoc, session: "continue" });
           }
         } else {
           const newholdToken = await client.holdTokens.create();
@@ -71,9 +78,11 @@ const bookingService = {
             expiresInSeconds: newholdToken.expiresInSeconds,
           });
           newToken.save();
-          resolve({ ...newToken, session: "start" });
+          const token: any = (newToken as any)._doc;
+          resolve({ ...token, session: "start" });
         }
       } catch (err) {
+        console.log(err);
         reject(err);
       }
     });
