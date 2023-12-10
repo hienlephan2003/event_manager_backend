@@ -8,10 +8,11 @@ const otpService = {
   sendOTP: (phoneNumber: string) => {
     return new Promise(async (resolve, reject) => {
       try {
+        console.log(phoneNumber);
         const client = twilio(accountSid, authToken);
         const otp = await client.verify.v2
           .services(verifySid)
-          .verifications.create({ to: `+${phoneNumber}`, channel: "sms" });
+          .verifications.create({ to: `+84862622563`, channel: "sms" });
         console.log(otp);
         resolve(otp);
       } catch (err) {
@@ -33,6 +34,7 @@ const otpService = {
             else reject("");
           });
       } catch (err) {
+        console.log(err);
         reject(err);
       }
     });

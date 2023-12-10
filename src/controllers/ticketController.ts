@@ -4,6 +4,8 @@ import Event from "../models/Event";
 import ShowTime from "../models/ShowTime";
 import ticketService from "../services/ticketService";
 import mongoose from "mongoose";
+import { ObjectId } from "mongodb";
+import TicketSale from "../models/TicketSale";
 const ticketController = {
   // createTicketSales: async (req: Request, res: Response) => {
   //   try {
@@ -24,14 +26,6 @@ const ticketController = {
       res.status(200).json(newTicketTypes);
     } catch (e) {
       res.status(500).json(e);
-    }
-  },
-  updateTicketType: async (req: Request, res: Response) => {
-    try {
-      // const updateTicket = await ticketService.updateTicketType(req.body);
-      // res.status(200).json(updateTicket);
-    } catch (err) {
-      res.status(500).json(err);
     }
   },
   updateTicketSale: async (req: Request, res: Response) => {
@@ -130,6 +124,98 @@ const ticketController = {
     } catch (err) {
       res.status(500).json(err);
     }
+  },
+  filterTicket: async (req: Request, res: Response) => {
+    const showtimeId = req.params.showtimeId;
+
+    const type = req.query.type;
+    const sort = req.query.sort;
+    console.log(type, sort);
+    let timeSort = -1;
+    switch (sort) {
+      case "Newest":
+        timeSort = -1;
+        break;
+      case "Oldest":
+        timeSort = 1;
+        break;
+    }
+    const tickets = await TicketSale.aggregate([
+      {
+        $set: {
+          type: type,
+          timeSort: timeSort,
+        },
+      },
+      {
+        $match: {
+          showTimeId: new mongoose.Types.ObjectId(showtimeId),
+        },
+      },
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "ticketTypeId",
+          foreignField: "_id",
+          as: "ticketType",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ticketType",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              type: "All",
+              "ticketType.ticketName": {
+                $ne: "",
+              },
+            },
+            {
+              "ticketType.ticketName": type,
+            },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: "$user",
+          countTicket: {
+            $count: {},
+          },
+          totalPrice: {
+            $sum: "$ticketType.price",
+          },
+          createdAt: {
+            $min: "$createdAt",
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $sort: {
+          createdAt: timeSort === 1 ? 1 : -1,
+        },
+      },
+    ]);
+    res.json(tickets);
   },
 };
 export default ticketController;

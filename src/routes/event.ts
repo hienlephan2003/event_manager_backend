@@ -3,9 +3,10 @@ const router = express.Router();
 const { verifyToken } = require("../middlewares/verifyToken");
 import eventController from "../controllers/eventController";
 // CREATE EVENT
-router.post("/", eventController.createEvent);
+router.post("/", verifyToken, eventController.createEvent);
 router.get("/filter", eventController.filterEvent);
 router.get("/search", eventController.searchEvent);
+router.get("/recommended", eventController.recommendedEvent);
 
 //UPDATE EVENT
 router.put("/:id", verifyToken, eventController.updateEvent);

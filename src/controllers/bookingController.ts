@@ -49,6 +49,8 @@ const bookingController = {
     try {
       const eventKey = req.body.eventKey;
       const holdToken = req.body.holdToken;
+      const discountId = req.body.discountId;
+
       // const seats = req.body.tickets.flatMap((item: any) => item.seats);
       let totalPrice = 0;
       const tickets = req.body.tickets;
@@ -66,6 +68,8 @@ const bookingController = {
         receiverEmail: req.body.receiverEmail,
         receiverPhoneNumber: req.body.receiverPhoneNumber,
       };
+      console.log("create new booking");
+      console.log(data);
       //create payment
       const payment: PaymentDTO = {
         userId: req.body.userId ?? "",
