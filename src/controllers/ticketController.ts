@@ -1,27 +1,27 @@
-
 import TicketType from "../models/TicketType";
-import TicketSale from "../models/TicketSale";
 import { Request, Response } from "express";
 import Event from "../models/Event";
 import ShowTime from "../models/ShowTime";
 import ticketService from "../services/ticketService";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
+import TicketSale from "../models/TicketSale";
 const ticketController = {
-  createTicketSales: async (req: Request, res: Response) => {
-    try {
-      const newTicket = await ticketService.createTicketSales(
-        req.body.ticketSales
-      );
-      res.status(200).json(newTicket);
-    } catch (e) {
-      res.status(500).json(e);
-    }
-  },
+  // createTicketSales: async (req: Request, res: Response) => {
+  //   try {
+  //     const newTicket = await ticketService.createTicketSales(
+  //       req.body.ticketSales
+  //     );
+  //     res.status(200).json(newTicket);
+  //   } catch (e) {
+  //     res.status(500).json(e);
+  //   }
+  // },
   createTicketTypes: async (req: Request, res: Response) => {
     try {
       const newTicketTypes = await ticketService.createTicketTypes(
-        req.body.ticketTypes
+        req.body.ticketTypes,
+        req.body.eventId
       );
       res.status(200).json(newTicketTypes);
     } catch (e) {
@@ -72,8 +72,13 @@ const ticketController = {
   getTicketTypesOfShowtime: async (req: Request, res: Response) => {
     try {
       const showtimeId: String = req.query.showtime_id as String;
-      const doc = await TicketType.find({ showtimeId: showtimeId });
-      res.status(200).json(doc);
+      const showtime: any = await ShowTime.findById(showtimeId);
+      console.log(showtime);
+      const eventId = showtime.eventId;
+      const doc1 = await TicketType.find({ eventId: eventId });
+      return res.status(200).json(doc1);
+      // const doc = await TicketType.find({ showtimeId: showtimeId });
+      // res.status(200).json(doc);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -122,7 +127,7 @@ const ticketController = {
   },
   filterTicket: async (req: Request, res: Response) => {
     const showtimeId = req.params.showtimeId;
-    
+
     const type = req.query.type;
     const sort = req.query.sort;
     console.log(type, sort);
@@ -139,7 +144,7 @@ const ticketController = {
       {
         $set: {
           type: type,
-          timeSort: timeSort
+          timeSort: timeSort,
         },
       },
       {
@@ -178,19 +183,17 @@ const ticketController = {
       },
       {
         $group: {
-            _id: "$user",
-            countTicket: {
-                $count:{}
-            },
-            totalPrice: {
-                $sum:"$ticketType.price"
-            },
-            createdAt: {
-                $min: "$createdAt",
-            }
-            
-        }
-        
+          _id: "$user",
+          countTicket: {
+            $count: {},
+          },
+          totalPrice: {
+            $sum: "$ticketType.price",
+          },
+          createdAt: {
+            $min: "$createdAt",
+          },
+        },
       },
       {
         $lookup: {
@@ -209,7 +212,7 @@ const ticketController = {
       {
         $sort: {
           createdAt: timeSort === 1 ? 1 : -1,
-        }
+        },
       },
     ]);
     res.json(tickets);

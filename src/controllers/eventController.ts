@@ -1,10 +1,12 @@
 import eventService from "../services/eventService";
 import Event from "../models/Event";
 import { Request, Response } from "express";
-import organizerService from "../services/organizerService";
-import showTimeService from "../services/showTimeService";
-import addressService from "../services/addressService";
+import showTimeService, { IShowTime } from "../services/showTimeService";
 import { ObjectId } from "mongodb";
+import ticketService from "../services/ticketService";
+import mongoose from "mongoose";
+import showtimeService from "../services/showTimeService";
+import stageService from "../services/stageService";
 import { Region, SeatsioClient } from "seatsio";
 import TicketSale from "../models/TicketSale";
 // import { IEvent } from "./../models/Event";
@@ -12,33 +14,46 @@ import TicketSale from "../models/TicketSale";
 const eventController = {
   createEvent: async (req: Request, res: Response) => {
     try {
-      const event = req.body;
-      //create new organizer if not exist
-      if (!event.organizerId || !event.organizerId.trim()) {
-        if (!event.organizer) {
-          throw "You need to add organizer infomation";
-        }
-        const organizer = event.organizer;
-        // organizer.managedBy = user.id;
-        const newOrganizer: any = await organizerService.createNewOrganizer(
-          organizer
+      const event = {
+        chartId: req.body.chartId,
+        organizerId: "65105f66641996e970f1309c",
+        eventName: req.body.eventName,
+        description: req.body.description,
+        coverImage: req.body.coverImage,
+        eventType: req.body.eventTypes,
+        tickets: req.body.tickets,
+        showtimes: req.body.showtimes,
+        address: req.body.address,
+        stageId: null,
+      };
+      console.log(req.body);
+      let stage;
+      if (event.chartId) {
+        stage = await stageService.createNewStage(
+          event.chartId,
+          event.address,
+          event.organizerId
         );
-        console.log(newOrganizer);
-        event.organizerId = newOrganizer._id;
+        event.stageId = (stage as any)._id;
       }
-      if (!event.addressId || !event.addressId.trim()) {
-        if (!event.address) {
-          throw "You need to add event address infomation";
-        }
-        const address: any = await addressService.createNewAddress(
-          event.address
-        );
-        event.addressId = address._id;
-      }
-      const newEvent = await eventService.createNewEvent(event);
-      res.status(200).json(newEvent);
+      console.log(stage);
+      const newEvent: any = await eventService.createNewEvent(event);
+      console.log(newEvent);
+      const tickets = await ticketService.createTicketTypes(
+        event.tickets,
+        newEvent._id
+      );
+      console.log(tickets);
+      const showtimes = await showtimeService.createNewShowTimes(
+        event.showtimes,
+        newEvent._id,
+        event.chartId
+      );
+      console.log(showtimes);
+      res.status(200).json({ event: newEvent, showtimes, tickets, stage });
+      console.log("tui la create new event ne");
     } catch (e) {
-      console.log(e);
+      console.log("e " + e);
       res.status(500).json(e);
     }
   },
@@ -55,6 +70,9 @@ const eventController = {
   },
   deleteEvent: async (req: Request, res: Response) => {
     try {
+      // await Event.deleteMany({
+      //   chartId: "12",
+      // });
       await Event.findByIdAndDelete(req.params.id);
       res.status(200).json("Event successfully deleted");
     } catch (err) {
@@ -75,6 +93,20 @@ const eventController = {
         },
         "showtimes",
       ]);
+      // console.log(doc);
+      //create new organizer if not exist
+      // if (!event.organizerId || !event.organizerId.trim()) {
+      //   if (!event.organizer) {
+      //     throw "You need to add organizer infomation";
+      //   }
+      //   const organizer = event.organizer;
+      //   // organizer.managedBy = user.id;
+      //   const newOrganizer: any = await organizerService.createNewOrganizer(
+      //     organizer
+      //   );
+      //   console.log(newOrganizer);
+      //   event.organizerId = newOrganizer._id;
+      // }
 
       // const eventDoc = await Event.aggregate(
       //   [
@@ -196,8 +228,10 @@ const eventController = {
 
         ...ev,
       };
+      console.log("tui la detail event ne");
       res.status(200).json(data);
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },

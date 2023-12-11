@@ -19,19 +19,9 @@ const EventSchema = new mongoose.Schema(
     eventType: [
       {
         type: String,
-        // enum: [
-        //   "liveMusic",
-        //   "theater",
-        //   "course",
-        //   "sport",
-        //   "community",
-        //   "nightlife",
-        //   "artculture",
-        // ],
         required: true,
       },
     ],
-
     organizerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organizer",
@@ -45,7 +35,6 @@ const EventSchema = new mongoose.Schema(
       default: "upcomming",
     },
     embeddedLinks: [{ type: String }],
-    startTime: { type: Date, required: true },
     stageId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Stage",

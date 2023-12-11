@@ -9,7 +9,7 @@ export type OrderRequest = {
   appid: String;
   apptransid: String;
   appuser: String;
-  apptime: String;
+  apptime: any;
   item: Object;
   embeddata: Object;
   amount: Number;
