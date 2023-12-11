@@ -8,6 +8,8 @@ router.post("/", verifyToken ,eventController.createEvent);
 router.get('/filter', eventController.filterEvent);
 router.get('/search', eventController.searchEvent);
 router.get('/recommended',eventController.recommendedEvent);
+router.get('/suggest',eventController.suggestEvent);
+
 
 //UPDATE EVENT
 router.put("/:id", verifyToken ,eventController.updateEvent);

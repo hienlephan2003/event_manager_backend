@@ -192,6 +192,7 @@ const eventController = {
         address: `${address.ward}, ${address.district}, ${address.province}`,
         stage: stage.stageName,
         organizer: organizer,
+        eventType: eventDoc.eventType,
 
         ...ev,
       };
@@ -313,13 +314,25 @@ const eventController = {
           },
         },
         {
-          $project: {
-            _id: 1,
-            eventName: 1,
-            startTime: {
-              $dateToString: { date: "$startTime", format: "%d/%m/%Y" },
-            },
-            stage: "$stage.stageName",
+          $lookup: {
+            from: "addresses",
+            localField: "stage.addressId",
+            foreignField: "_id",
+            as: "address",
+          },
+        },
+        {
+          $unwind: {
+            path: "$address",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "showtimes",
+            localField: "_id",
+            foreignField: "eventId",
+            as: "showtimes",
           },
         },
         {
@@ -338,6 +351,8 @@ const eventController = {
     const endTime = req.query.end as string;
     const priceQuery = req.query.price || "both";
     const type = req.query.types as string[];
+    const query = "" || (req.query.query as string);
+    const regex = new RegExp(query, "i");
 
     let typeRes: string[];
     if (type === undefined) typeRes = [];
@@ -477,6 +492,9 @@ const eventController = {
           ],
         },
       },
+      {
+        $match: { eventName: { $regex: regex } },
+      },
     ]);
 
     res.json(listEvent);
@@ -545,7 +563,81 @@ const eventController = {
       },
 
       {
-        $limit: 5
+        $limit: 5,
+      },
+    ]);
+    res.json(result);
+  },
+  suggestEvent: async (req: Request, res: Response) => {
+    const types = req.query.types as string[];
+    console.log(types);
+    let typeRes: string[];
+    if (!Array.isArray(types)) typeRes = [types];
+    else typeRes = types;
+    //console.log(typeRes);
+    const result = await Event.aggregate([
+      {
+        $set: {
+          types: typeRes,
+        },
+      },
+      {
+        $match: {
+          eventType: {
+            $in: typeRes,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "stages",
+          localField: "stageId",
+          foreignField: "_id",
+          as: "stage",
+        },
+      },
+      {
+        $unwind: {
+          path: "$stage",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "addresses",
+          localField: "stage.addressId",
+          foreignField: "_id",
+          as: "address",
+        },
+      },
+      {
+        $unwind: {
+          path: "$address",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "showtimes",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "showtimes",
+        },
+      },
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "showtimes._id",
+          foreignField: "showtimeId",
+          as: "ticketTypes",
+        },
+      },
+      {
+        $match: {
+          "showtimes.startAt": {
+            $gt: new Date(),
+          },
+        },
       },
     ]);
     res.json(result);

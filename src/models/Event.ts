@@ -16,19 +16,22 @@ import mongoose from "mongoose";
 const EventSchema = new mongoose.Schema(
   {
     eventName: { type: String, required: true },
-    eventType: {
-      type: String,
-      enum: [
-        "liveMusic",
-        "theater",
-        "course",
-        "sport",
-        "community",
-        "nightlife",
-        "artculture",
-      ],
-      required: true,
-    },
+    eventType: [
+      {
+        type: String,
+        // enum: [
+        //   "liveMusic",
+        //   "theater",
+        //   "course",
+        //   "sport",
+        //   "community",
+        //   "nightlife",
+        //   "artculture",
+        // ],
+        required: true,
+      },
+    ],
+
     organizerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organizer",
@@ -52,7 +55,7 @@ const EventSchema = new mongoose.Schema(
       {
         user: {
           type: mongoose.Schema.Types.ObjectId,
-          ref:"User",
+          ref: "User",
           required: false,
         },
         role: { type: String, required: true },
