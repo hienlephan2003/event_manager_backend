@@ -19,6 +19,11 @@ const paymentController = {
       response.status(500).json(err);
     }
   },
+  createPaymentv2: async (req: Request, res: Response) => {
+    try {
+      await paymentService.paymentv2();
+    } catch (err) {}
+  },
   verifyPaymentResult: async (request: Request, response: Response) => {
     try {
       const query: QueryRequest = {

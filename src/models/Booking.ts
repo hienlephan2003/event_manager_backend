@@ -26,6 +26,11 @@ const BookingSchema = new mongoose.Schema(
     receiverName: { type: String },
     receiverEmail: { type: String },
     receiverPhoneNumber: { type: String },
+    status: {
+      type: String,
+      enum: ["success", "pending", "failed"],
+      default: "pending",
+    },
   },
   { timestamps: true }
 );

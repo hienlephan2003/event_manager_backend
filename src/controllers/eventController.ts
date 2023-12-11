@@ -51,6 +51,7 @@ const eventController = {
       );
       console.log(showtimes);
       res.status(200).json({ event: newEvent, showtimes, tickets, stage });
+      console.log("tui la create new event ne");
     } catch (e) {
       console.log("e " + e);
       res.status(500).json(e);
@@ -92,7 +93,7 @@ const eventController = {
         },
         "showtimes",
       ]);
-      console.log(doc);
+      // console.log(doc);
       //create new organizer if not exist
       // if (!event.organizerId || !event.organizerId.trim()) {
       //   if (!event.organizer) {
@@ -226,6 +227,7 @@ const eventController = {
 
         ...ev,
       };
+      console.log("tui la detail event ne");
       res.status(200).json(data);
     } catch (err) {
       console.log(err);
@@ -577,7 +579,7 @@ const eventController = {
       },
 
       {
-        $limit: 5
+        $limit: 5,
       },
     ]);
     res.json(result);
