@@ -228,7 +228,6 @@ const eventController = {
 
         ...ev,
       };
-      console.log("tui la detail event ne");
       res.status(200).json(data);
     } catch (err) {
       console.log(err);
