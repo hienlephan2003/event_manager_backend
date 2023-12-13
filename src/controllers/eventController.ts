@@ -480,8 +480,8 @@ const eventController = {
       {
         $lookup: {
           from: "tickettypes",
-          localField: "showtimes._id",
-          foreignField: "showtimeId",
+          localField: "_id",
+          foreignField: "eventId",
           as: "ticketTypes",
         },
       },
@@ -490,17 +490,17 @@ const eventController = {
           $or: [
             {
               priceQuery: "Free",
-              "ticketTypes.price": 0,
+              "ticketTypes.ticketTypePrice": 0,
             },
             {
               priceQuery: "Paid",
-              "ticketTypes.price": {
+              "ticketTypes.ticketTypePrice": {
                 $gt: 0,
               },
             },
             {
               priceQuery: "both",
-              "ticketTypes.price": {
+              "ticketTypes.ticketTypePrice": {
                 $gte: 0,
               },
             },

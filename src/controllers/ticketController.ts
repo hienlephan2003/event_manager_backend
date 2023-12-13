@@ -56,14 +56,12 @@ const ticketController = {
   getTicketTypesOfEvent: async (req: Request, res: Response) => {
     try {
       const eventId: String = req.query.event_id as String;
-      const doc = await Event.findById(eventId).populate("showtimes");
-      const event: any = doc;
-      const listShowtime = event.showtimes.map(
-        (showtime: { _id: any }) => showtime._id
-      );
-      const listTickets = await ticketService.getTicketTypesOfEvent(
-        listShowtime
-      );
+      // const doc = await Event.findById(eventId).populate("showtimes");
+      // const event: any = doc;
+      // const listShowtime = event.showtimes.map(
+      //   (showtime: { _id: any }) => showtime._id
+      // );
+      const listTickets = await TicketType.find({eventId: eventId});
       res.status(200).json(listTickets);
     } catch (err) {
       res.status(500).json(err);
@@ -87,11 +85,12 @@ const ticketController = {
   getSummaryType: async (req: Request, res: Response) => {
     try {
       const showtimeId: any = req.query.showtime_id;
+      const eventId: any = req.query.event_id;
       // const doc = await TicketSale.find({ticketTypeId: typeId});
       const doc = await TicketType.aggregate([
         {
           $match: {
-            showtimeId: new mongoose.Types.ObjectId(showtimeId),
+            eventId: new mongoose.Types.ObjectId(eventId),
           },
         },
         {
