@@ -558,19 +558,12 @@ const eventController = {
   },
   recommendedEvent: async (req: Request, res: Response) => {
     const result = await Event.aggregate([
-      {
-        $lookup: {
-          from: "showtimes",
-          localField: "_id",
-          foreignField: "eventId",
-          as: "showtimes",
-        },
-      },
+     
       {
         $lookup: {
           from: "tickettypes",
-          localField: "showtimes._id",
-          foreignField: "showtimeId",
+          localField: "_id",
+          foreignField: "eventId",
           as: "ticketTypes",
         },
       },
