@@ -668,5 +668,23 @@ const eventController = {
     ]);
     res.json(result);
   },
+  pendingEvent:  async (req: Request, res: Response) => {
+    const result = await Event.find({status : {
+      $in: ['Approved', 'Pending', "Canceled"]
+    }}).populate('organizerId');
+    return res.status(200).json(result)
+  } ,
+  approveEvent:async (req: Request, res: Response) => {
+    const result = await Event.findByIdAndUpdate(req.params.id, {
+      status: 'Approved'
+    } )
+    return res.status(200).json(result);
+  } ,
+  rejectEvent:async (req: Request, res: Response) => {
+    const result = await Event.findByIdAndUpdate(req.params.id, {
+      status: 'Rejected'
+    } )
+    return res.status(200).json(result);
+  } 
 };
 export default eventController;

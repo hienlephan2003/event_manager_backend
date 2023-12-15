@@ -31,8 +31,8 @@ const EventSchema = new mongoose.Schema(
     description: { type: String },
     status: {
       type: String,
-      enum: ["upcomming", "", "canceled", "occurred"],
-      default: "upcomming",
+      enum: ["Pending", "Rejected", "Canceled", "Approved"],
+      default: "Pending",
     },
     embeddedLinks: [{ type: String }],
     stageId: {

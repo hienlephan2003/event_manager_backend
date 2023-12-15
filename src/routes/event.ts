@@ -8,6 +8,9 @@ router.get('/filter', eventController.filterEvent);
 router.get('/search', eventController.searchEvent);
 router.get('/recommended',eventController.recommendedEvent);
 router.get('/suggest',eventController.suggestEvent);
+router.get('/pending',eventController.pendingEvent);
+router.patch('/:id/reject',eventController.rejectEvent);
+router.patch('/:id/approve',eventController.approveEvent);
 
 
 //UPDATE EVENT
