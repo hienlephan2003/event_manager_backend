@@ -9,6 +9,7 @@ router.get('/search', eventController.searchEvent);
 router.get('/recommended',eventController.recommendedEvent);
 router.get('/suggest',eventController.suggestEvent);
 router.get('/pending',eventController.pendingEvent);
+router.get('/hotEvents', eventController.topHotEvents);
 router.patch('/:id/reject',eventController.rejectEvent);
 router.patch('/:id/approve',eventController.approveEvent);
 
