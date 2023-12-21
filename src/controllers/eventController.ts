@@ -224,10 +224,10 @@ const eventController = {
         address: `${address.ward}, ${address.district}, ${address.province}`,
         stage: stage.stageName,
         organizer: organizer,
+        eventType: eventDoc.eventType,
 
         ...ev,
       };
-      console.log("tui la detail event ne");
       res.status(200).json(data);
     } catch (err) {
       console.log(err);
@@ -239,6 +239,11 @@ const eventController = {
       // let client = new SeatsioClient(Region.OC(), 'ce25e325-9589-4562-9c5c-08f64b152d6b');
       // await client.events.book('b4eecd68-248b-4a5b-808c-1da15468515a', ['G-5','G-6']);
       const listEvent = await Event.aggregate([
+        {
+          $match: {
+            status: "Approved",
+          },
+        },
         {
           $lookup: {
             from: "showtimes",
@@ -330,7 +335,7 @@ const eventController = {
       //const listResults = await Event.find({eventName: {$regex: regex}}).populate({path:'stageId'})
       const listResults = await Event.aggregate([
         {
-          $match: { eventName: { $regex: regex } },
+          $match: { eventName: { $regex: regex }, status: "Approved" },
         },
         {
           $lookup: {
@@ -347,13 +352,25 @@ const eventController = {
           },
         },
         {
-          $project: {
-            _id: 1,
-            eventName: 1,
-            startTime: {
-              $dateToString: { date: "$startTime", format: "%d/%m/%Y" },
-            },
-            stage: "$stage.stageName",
+          $lookup: {
+            from: "addresses",
+            localField: "stage.addressId",
+            foreignField: "_id",
+            as: "address",
+          },
+        },
+        {
+          $unwind: {
+            path: "$address",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "showtimes",
+            localField: "_id",
+            foreignField: "eventId",
+            as: "showtimes",
           },
         },
         {
@@ -372,6 +389,8 @@ const eventController = {
     const endTime = req.query.end as string;
     const priceQuery = req.query.price || "both";
     const type = req.query.types as string[];
+    const query = "" || (req.query.query as string);
+    const regex = new RegExp(query, "i");
 
     let typeRes: string[];
     if (type === undefined) typeRes = [];
@@ -385,6 +404,11 @@ const eventController = {
           priceQuery: priceQuery,
           types: typeRes,
           provinceRes: provinceRes,
+        },
+      },
+      {
+        $match: {
+          status: "Approved",
         },
       },
       {
@@ -466,8 +490,8 @@ const eventController = {
       {
         $lookup: {
           from: "tickettypes",
-          localField: "showtimes._id",
-          foreignField: "showtimeId",
+          localField: "_id",
+          foreignField: "eventId",
           as: "ticketTypes",
         },
       },
@@ -476,17 +500,17 @@ const eventController = {
           $or: [
             {
               priceQuery: "Free",
-              "ticketTypes.price": 0,
+              "ticketTypes.ticketTypePrice": 0,
             },
             {
               priceQuery: "Paid",
-              "ticketTypes.price": {
+              "ticketTypes.ticketTypePrice": {
                 $gt: 0,
               },
             },
             {
               priceQuery: "both",
-              "ticketTypes.price": {
+              "ticketTypes.ticketTypePrice": {
                 $gte: 0,
               },
             },
@@ -510,6 +534,9 @@ const eventController = {
             },
           ],
         },
+      },
+      {
+        $match: { eventName: { $regex: regex } },
       },
     ]);
 
@@ -542,18 +569,15 @@ const eventController = {
   recommendedEvent: async (req: Request, res: Response) => {
     const result = await Event.aggregate([
       {
-        $lookup: {
-          from: "showtimes",
-          localField: "_id",
-          foreignField: "eventId",
-          as: "showtimes",
+        $match: {
+          status: "Approved",
         },
       },
       {
         $lookup: {
           from: "tickettypes",
-          localField: "showtimes._id",
-          foreignField: "showtimeId",
+          localField: "_id",
+          foreignField: "eventId",
           as: "ticketTypes",
         },
       },
@@ -583,6 +607,171 @@ const eventController = {
       },
     ]);
     res.json(result);
+  },
+  suggestEvent: async (req: Request, res: Response) => {
+    const types = req.query.types as string[];
+    console.log(types);
+    let typeRes: string[];
+    if (!Array.isArray(types)) typeRes = [types];
+    else typeRes = types;
+    //console.log(typeRes);
+    const result = await Event.aggregate([
+      {
+        $set: {
+          types: typeRes,
+        },
+      },
+      {
+        $match: {
+          status: "Approved",
+        },
+      },
+      {
+        $match: {
+          eventType: {
+            $in: typeRes,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "stages",
+          localField: "stageId",
+          foreignField: "_id",
+          as: "stage",
+        },
+      },
+      {
+        $unwind: {
+          path: "$stage",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "addresses",
+          localField: "stage.addressId",
+          foreignField: "_id",
+          as: "address",
+        },
+      },
+      {
+        $unwind: {
+          path: "$address",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "showtimes",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "showtimes",
+        },
+      },
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "showtimes._id",
+          foreignField: "showtimeId",
+          as: "ticketTypes",
+        },
+      },
+      {
+        $match: {
+          "showtimes.startAt": {
+            $gt: new Date(),
+          },
+        },
+      },
+    ]);
+    res.json(result);
+  },
+  pendingEvent: async (req: Request, res: Response) => {
+    const result = await Event.find({
+      status: {
+        $in: ["Approved", "Pending", "Canceled"],
+      },
+    }).populate("organizerId");
+    return res.status(200).json(result);
+  },
+  approveEvent: async (req: Request, res: Response) => {
+    const result = await Event.findByIdAndUpdate(req.params.id, {
+      status: "Approved",
+    });
+    return res.status(200).json(result);
+  },
+  rejectEvent: async (req: Request, res: Response) => {
+    const result = await Event.findByIdAndUpdate(req.params.id, {
+      status: "Rejected",
+    });
+    return res.status(200).json(result);
+  },
+  topHotEvents: async (req: Request, res: Response) => {
+    const endDate = new Date();
+    let startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+    console.log(endDate, startDate);
+    const result = await Event.aggregate([
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "ticketTypes",
+        },
+      },
+      {
+        $lookup: {
+          from: "ticketsales",
+          localField: "ticketTypes._id",
+          foreignField: "ticketTypeId",
+          as: "tickets",
+        },
+      },
+      {
+        $match: {
+          "tickets.createdAt": {
+            $gte: startDate,
+            $lt: endDate,
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$tickets",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$tickets.seats",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            id: "$_id",
+            name: "$eventName",
+          },
+
+          countSeats: {
+            $count: {},
+          },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+      },
+
+      {
+        $limit: 5,
+      },
+    ]);
+    return res.json(result);
   },
 };
 export default eventController;

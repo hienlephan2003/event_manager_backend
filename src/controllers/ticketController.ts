@@ -56,8 +56,8 @@ const ticketController = {
   getTicketTypesOfEvent: async (req: Request, res: Response) => {
     try {
       const eventId: String = req.query.event_id as String;
-      const tickets = await ticketService.getTickets(eventId);
-      res.status(200).json(tickets);
+      const listTickets = await TicketType.find({ eventId: eventId });
+      res.status(200).json(listTickets);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -80,6 +80,7 @@ const ticketController = {
   getSummaryType: async (req: Request, res: Response) => {
     try {
       const showtimeId: any = req.query.showtime_id;
+      // const eventId: any = req.query.event_id;
       // const doc = await TicketSale.find({ticketTypeId: typeId});
       const doc = await TicketType.aggregate([
         {
@@ -96,22 +97,43 @@ const ticketController = {
           },
         },
         {
-          $project: {
-            ticketName: 1,
-            countTicket: { $size: "$ticketsales" },
-            price: 1,
-            ticketsales: 1,
+          $set: {
+            countSeats: {
+              $size: "$seats",
+            },
           },
         },
         {
-          $project: {
-            ticketName: 1,
-            countTicket: 1,
-            price: 1,
-            totalPrice: { $multiply: ["$countTicket", "$price"] },
-            ticketsales: 1,
+          $group: {
+            _id: "$ticketType",
+            dates: {
+              $push: "$createdAt",
+            },
+            seats: {
+              $push: "$countSeats",
+            },
+            countTicket: { $count: {} },
+            totalSeats: {
+              $sum: "$countSeats",
+            },
           },
         },
+
+        {
+          $addFields: {
+            totalPrice: {
+              $multiply: ["$totalSeats", "$_id.ticketTypePrice"],
+            },
+          },
+        },
+        // {
+        //   $project: {
+        //     _id: 1,
+        //     countTicket: 1,
+        //     totalPrice: ,
+        //     ticketsales: 1,
+        //   },
+        // },
       ]);
       res.status(200).json(doc);
     } catch (err) {
@@ -164,12 +186,12 @@ const ticketController = {
           $or: [
             {
               type: "All",
-              "ticketType.ticketName": {
+              "ticketType.ticketTypeName": {
                 $ne: "",
               },
             },
             {
-              "ticketType.ticketName": type,
+              "ticketType.ticketTypeName": type,
             },
           ],
         },
@@ -181,7 +203,7 @@ const ticketController = {
             $count: {},
           },
           totalPrice: {
-            $sum: "$ticketType.price",
+            $sum: "$ticketType.ticketTypePrice",
           },
           createdAt: {
             $min: "$createdAt",
@@ -209,6 +231,45 @@ const ticketController = {
       },
     ]);
     res.json(tickets);
+  },
+  getTicketOfShowtime: async (req: Request, res: Response) => {
+    const showtimeId = req.params.showtimeId;
+    const result = await TicketSale.aggregate([
+      {
+        $match: {
+          showTimeId: new mongoose.Types.ObjectId(showtimeId),
+        },
+      },
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "ticketTypeId",
+          foreignField: "_id",
+          as: "ticketType",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ticketType",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]);
+    return res.json(result);
   },
 };
 export default ticketController;

@@ -6,8 +6,11 @@ import axios from "axios";
 import bodyParser from "body-parser";
 import { Request, Response } from "express";
 import Event from "../models/Event";
-
 const userController = {
+  findAll: async (req: Request, res: Response) => {
+    const result = await User.find({});
+    return res.json(result);
+  },
   updateUser: async (req: Request, res: Response) => {
     if (req.body.password) {
       req.body.password = CryptoJs.AES.encrypt(

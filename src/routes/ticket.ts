@@ -2,7 +2,9 @@ import express from "express";
 const router = express.Router();
 import ticketController from "../controllers/ticketController";
 const { verifyToken } = require("../middlewares/verifyToken");
+router.get("/", ticketController.getAllTickets);
 router.get("/:showtimeId/filter", ticketController.filterTicket);
+router.get("/:showtimeId/statistic", ticketController.getTicketOfShowtime);
 router.get("/event", ticketController.getTicketTypesOfEvent);
 router.get("/showtime", ticketController.getTicketTypesOfShowtime);
 //type ticket
