@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import paymentService from "../services/paymentService";
 import { PaymentDTO, QueryRequest, QueryType } from "../types/payment.type";
+import bookingService from "../services/bookingService";
 const paymentController = {
   createNewPayment: async (request: Request, response: Response) => {
     try {
@@ -9,7 +10,6 @@ const paymentController = {
         bookingId: request.body.bookingId ?? "",
         amount: request.body.amount ?? 50000,
         embededInfo: request.body.embededInfo ?? "",
-        redirectUrl: "http://localhost:3000/events/65105f66641996e970f130a0/",
       };
       paymentService.createTransaction(payment).then((data) => {
         console.log(data);
@@ -26,17 +26,12 @@ const paymentController = {
   },
   verifyPaymentResult: async (request: Request, response: Response) => {
     try {
-      const query: QueryRequest = {
-        userId: request.body.userId,
-        appTransId: request.body.appTransId,
-        paymentId: request.body.paymentId,
-      };
       paymentService
-        .createCallbackQuery(query, QueryType.createOrder)
+        .createCallbackQuery(request.body.paymentId, QueryType.createOrder)
         .then((result: any) => {
           response.status(200).json(result);
         });
-    } catch (err) {
+    } catch (err: any) {
       response.status(500).json(err);
     }
   },

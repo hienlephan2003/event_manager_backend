@@ -3,7 +3,6 @@ export type PaymentDTO = {
   bookingId: string;
   amount: number;
   embededInfo: string;
-  redirectUrl: String;
 };
 export type OrderRequest = {
   appid: String;

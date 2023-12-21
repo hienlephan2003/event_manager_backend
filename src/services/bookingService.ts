@@ -1,5 +1,8 @@
 import { client } from "../controllers/chartController";
+import Booking from "../models/Booking";
+import Payment from "../models/Payment";
 import TicketHoldToken from "../models/TicketHoldToken";
+import TicketSale from "../models/TicketSale";
 
 const bookingService = {
   createTemporaryBooking: (seats: Array<string>, eventKey: string) => {
@@ -23,12 +26,20 @@ const bookingService = {
     eventKey: string,
     holdToken: string
   ) => {
+    console.log("call eeee");
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await client.events.hold(eventKey, seats, holdToken);
+        console.log("one short");
+        const result = await client.events.book(eventKey, seats);
+        console.log(result);
         resolve(result);
-      } catch (err) {
-        reject(err);
+        console.log("not kill");
+      } catch (err: any) {
+        console.log("one kill");
+        console.log(err);
+        if ((err?.messages[0]).includes("Cannot change status of object")) {
+          resolve(err);
+        } else reject(err);
       }
     });
   },
@@ -86,6 +97,44 @@ const bookingService = {
         reject(err);
       }
     });
+  },
+  getBookingById: (bookingId: any) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const booking = await Booking.findById(bookingId).populate({
+          path: "showTime",
+          populate: {
+            path: "eventId",
+            model: "Event",
+          },
+        });
+
+        resolve(booking);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  getSeatNamesByBookingId: (bookingId: any) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const tickets = await TicketSale.find({ bookingId: bookingId });
+        const ticketNames = tickets.flatMap((ticket) => ticket.seats);
+        console.log(ticketNames);
+        resolve(ticketNames);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  deleteBooking: async (bookingId: string) => {
+    try {
+      await TicketSale.deleteMany({ bookingId: bookingId });
+      await Payment.findOneAndDelete({ bookingId });
+      await Booking.findByIdAndDelete(bookingId);
+    } catch (err) {
+      console.log(err);
+    }
   },
 };
 export default bookingService;

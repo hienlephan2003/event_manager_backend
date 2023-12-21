@@ -56,15 +56,8 @@ const ticketController = {
   getTicketTypesOfEvent: async (req: Request, res: Response) => {
     try {
       const eventId: String = req.query.event_id as String;
-      const doc = await Event.findById(eventId).populate("showtimes");
-      const event: any = doc;
-      const listShowtime = event.showtimes.map(
-        (showtime: { _id: any }) => showtime._id
-      );
-      const listTickets = await ticketService.getTicketTypesOfEvent(
-        listShowtime
-      );
-      res.status(200).json(listTickets);
+      const tickets = await ticketService.getTickets(eventId);
+      res.status(200).json(tickets);
     } catch (err) {
       res.status(500).json(err);
     }

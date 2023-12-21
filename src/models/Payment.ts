@@ -21,6 +21,10 @@ const PaymentSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    zaloTransactionId: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

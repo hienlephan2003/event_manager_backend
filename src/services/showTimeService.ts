@@ -65,6 +65,16 @@ const showtimeService = {
       }
     });
   },
+  getEventKeyOfShowtime: (showtimeId: string) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const showtime = await ShowTime.findById(showtimeId).exec();
+        resolve(showtime?.showTimeStage);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
 };
 
 export default showtimeService;
