@@ -12,6 +12,7 @@ const chartRouter = require("./chart");
 const imageRouter = require("./image");
 const bookingRouter = require("./booking");
 const stageRouter = require("./stage");
+const parameterRoute = require('./parameter')
 function Routes(app: Application) {
   app.use("/api", authRouter);
   app.use("/api/event", eventRouter);
@@ -26,5 +27,6 @@ function Routes(app: Application) {
   app.use("/api/image", imageRouter);
   app.use("/api/stage", stageRouter);
   app.use("/api/booking", bookingRouter);
+  app.use("/api/parameter", parameterRoute);
 }
 module.exports = Routes;

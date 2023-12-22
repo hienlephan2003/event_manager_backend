@@ -116,11 +116,11 @@ const ticketController = {
 
     
       const doc = await TicketSale.aggregate([
-        // {
-        //   $match: {
-        //     showTimeId: new mongoose.Types.ObjectId(showtimeId),
-        //   },
-        // },
+        {
+          $match: {
+            showTimeId: new mongoose.Types.ObjectId(showtimeId),
+          },
+        },
         {
           $lookup: {
             from: "tickettypes",
