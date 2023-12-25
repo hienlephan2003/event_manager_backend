@@ -34,7 +34,7 @@ const BookingSchema = new mongoose.Schema(
     receiverPhoneNumber: { type: String },
     status: {
       type: String,
-      enum: ["success", "pending", "failed"],
+      enum: ["success", "pending", "failed", "cancel"],
       default: "pending",
     },
     bookingToken: {

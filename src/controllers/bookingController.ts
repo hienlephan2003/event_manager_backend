@@ -139,6 +139,14 @@ const bookingController = {
       res.status(500).json(err);
     }
   },
+  cancelBooking: async (req: Request, res: Response) => {
+    try {
+      await bookingService.cancelBooking(req.params.id);
+      res.status(200).json("success");
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
 };
 
 export default bookingController;

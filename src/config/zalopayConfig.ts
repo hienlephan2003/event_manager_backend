@@ -7,6 +7,7 @@ const ZaloPayConfig = {
   bankcode: "zalopayapp",
   callbackurl:
     "https://ldgecfuqlicdeuqijmbr.supabase.co/functions/v1/callback-order",
+  refund_url: "https://sandbox.zalopay.com.vn/v001/tpe/partialrefund",
 };
 
 export default ZaloPayConfig;

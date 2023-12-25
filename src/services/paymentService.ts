@@ -12,7 +12,7 @@ import {
 } from "../types/payment.type";
 import bookingService from "./bookingService";
 import ticketService from "./ticketService";
-import { ConnectionStates } from "mongoose";
+import mongoose, { ConnectionStates } from "mongoose";
 import { response } from "express";
 import showtimeService from "./showTimeService";
 import { logger } from "../utils/logger";
@@ -220,6 +220,48 @@ const paymentService = {
         resolve(payment);
       } catch (err) {
         reject(err);
+      }
+    });
+  },
+  createPaymentRefund: async (bookingId: string) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const payment = await Payment.findOne({ bookingId });
+        if (!payment) reject("Not found payment");
+        else {
+          const timestamp = Date.now();
+          const uid = `${timestamp}${Math.floor(111 + Math.random() * 999)}`; // unique id
+
+          let params = {
+            appid: config.app_id,
+            mrefundid: `${moment().format("YYMMDD")}_${config.app_id}_${uid}`,
+            timestamp,
+            zptransid: "231218_5348",
+            amount: payment.amount,
+            description: "Refund your tickets order",
+            mac: "",
+          };
+          // app_id|zp_trans_id|amount|description|timestamp
+          let data =
+            params.appid +
+            "|" +
+            params.zptransid +
+            "|" +
+            params.amount +
+            "|" +
+            params.description +
+            "|" +
+            params.timestamp;
+          params.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+          axios
+            .post(config.refund_url, null, { params })
+            .then((res) => resolve(res.data))
+            .catch((err) => reject(err));
+        }
+      } catch (err: any) {
+        console.log("payment err");
+        console.log(err?.response);
+        reject(err?.response);
       }
     });
   },

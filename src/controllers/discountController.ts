@@ -96,5 +96,16 @@ const discountController = {
       res.status(500).json(err);
     }
   },
+  getDiscountsOfShowtime: async (req: Request, res: Response) => {
+    try {
+      const discounts = await Discount.find({
+        showtimeId: req.params.showtimeId,
+      });
+      res.status(200).json(discounts);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json(err);
+    }
+  },
 };
 export default discountController;

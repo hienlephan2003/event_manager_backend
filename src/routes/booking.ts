@@ -11,4 +11,5 @@ router.post(
 );
 router.post("/deleteBooking", bookingController.deleteBooking);
 router.post("/bookingDemo", bookingController.bookingTicketsDemo);
+router.post("/cancelBooking/:id", bookingController.cancelBooking);
 module.exports = router;

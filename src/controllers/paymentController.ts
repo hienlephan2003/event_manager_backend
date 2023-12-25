@@ -35,6 +35,17 @@ const paymentController = {
       response.status(500).json(err);
     }
   },
+  refundPayment: async (request: Request, response: Response) => {
+    try {
+      paymentService
+        .createPaymentRefund(request.body.bookingId)
+        .then((result: any) => {
+          response.status(200).json(result);
+        });
+    } catch (err: any) {
+      response.status(500).json(err);
+    }
+  },
 };
 
 export default paymentController;

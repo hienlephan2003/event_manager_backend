@@ -102,5 +102,21 @@ const ticketService = {
       }
     });
   },
+  getTicketNamesByBookingId: (bookingId: any) => {
+    return new Promise(async (res, rej) => {
+      try {
+        let ticketNames: string[] = [];
+        const tickets = await TicketSale.find({
+          bookingId: bookingId,
+        });
+        tickets.map((item) => {
+          ticketNames.push(...item.seats);
+        });
+        res(ticketNames);
+      } catch (err) {
+        rej(err);
+      }
+    });
+  },
 };
 export default ticketService;

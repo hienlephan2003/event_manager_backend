@@ -17,6 +17,32 @@ const ticketController = {
   //     res.status(500).json(e);
   //   }
   // },
+  getAllTickets: async (req: Request, res: Response) => {
+    const result = await TicketSale.aggregate([
+      {
+        $lookup: {
+          from: "tickettypes",
+          localField: "ticketTypeId",
+          foreignField: "_id",
+          as: "ticketType",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ticketType",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$seats",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]);
+    return res.json(result);
+  },
+
   createTicketTypes: async (req: Request, res: Response) => {
     try {
       const newTicketTypes = await ticketService.createTicketTypes(

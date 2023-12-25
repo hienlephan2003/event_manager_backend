@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import ShowTime from "../models/ShowTime";
 export type IShowTime = {
   showTimeStartDate: Date;

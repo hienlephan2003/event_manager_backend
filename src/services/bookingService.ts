@@ -1,8 +1,12 @@
+import mongoose from "mongoose";
 import { client } from "../controllers/chartController";
 import Booking from "../models/Booking";
 import Payment from "../models/Payment";
 import TicketHoldToken from "../models/TicketHoldToken";
 import TicketSale from "../models/TicketSale";
+import paymentService from "./paymentService";
+import showtimeService from "./showTimeService";
+import ticketService from "./ticketService";
 
 const bookingService = {
   createTemporaryBooking: (seats: Array<string>, eventKey: string) => {
@@ -135,6 +139,47 @@ const bookingService = {
     } catch (err) {
       console.log(err);
     }
+  },
+  cancelBooking: async (bookingId: string) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const booking = await Booking.findById(bookingId);
+        if (!booking) reject("Not found booking");
+        else {
+          new Promise(async (res, rej) => {
+            if (booking.totalPrice > 0) {
+              paymentService
+                .createPaymentRefund(bookingId)
+                .then((data) => res(data))
+                .catch((err) => rej(err));
+            }
+          })
+            .then(async (data) => {
+              const showtimeId: any = booking.showTime;
+              const eventKey = await showtimeService.getEventKeyOfShowtime(
+                showtimeId
+              );
+              const seats = await ticketService.getTicketNamesByBookingId(
+                bookingId
+              );
+              await client.events
+                .release(eventKey as string, seats as string[])
+                .then((data) => {
+                  console.log(data);
+                  booking.status = "cancel";
+                  booking.save();
+                  resolve(booking);
+                });
+            })
+            .catch((err) => {
+              console.log(err);
+              reject(err);
+            });
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
   },
 };
 export default bookingService;
