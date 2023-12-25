@@ -96,5 +96,9 @@ const discountController = {
       res.status(500).json(err);
     }
   },
+  findAll: async(req: Request, res: Response) => {
+    const result = await Discount.find({});
+    return res.json(result);
+  }
 };
 export default discountController;

@@ -575,6 +575,21 @@ const eventController = {
       },
       {
         $lookup: {
+          from: "showtimes",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "showtimes",
+        },
+      },
+      {
+        $match: {
+          'showtimes.startAt': {
+            $gte: new Date()
+          }
+        }
+      },
+      {
+        $lookup: {
           from: "tickettypes",
           localField: "_id",
           foreignField: "eventId",
@@ -596,6 +611,7 @@ const eventController = {
           },
         },
       },
+
       {
         $sort: {
           count: -1,
