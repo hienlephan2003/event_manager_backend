@@ -5,6 +5,7 @@ import paymentController from "../controllers/paymentController";
 router.post("/createPayment", paymentController.createNewPayment);
 router.post("/createPayment2", paymentController.createPaymentv2);
 router.post("/verifyPayment", paymentController.verifyPaymentResult);
+router.post("/refund", paymentController.refundPayment);
 // LOGIN
 
 module.exports = router;

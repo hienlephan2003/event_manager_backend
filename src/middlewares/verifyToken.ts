@@ -1,7 +1,11 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 import { Request, Response, NextFunction } from "express";
-const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+export const verifyToken = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader: any = req.headers.token;
   console.log(authHeader);
   if (authHeader) {
@@ -17,7 +21,11 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const verifyAndAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const verifyAndAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   verifyToken(req, res, () => {
     if (req.body.user.role == "ADMIN") {
       next();
@@ -26,5 +34,3 @@ const verifyAndAdmin = (req: Request, res: Response, next: NextFunction) => {
     }
   });
 };
-
-module.exports = { verifyToken, verifyAndAdmin };

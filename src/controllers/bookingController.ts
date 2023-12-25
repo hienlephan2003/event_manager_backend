@@ -5,6 +5,10 @@ import { PaymentDTO } from "../types/payment.type";
 import paymentService from "../services/paymentService";
 import discountService from "../services/discountService";
 import Booking from "../models/Booking";
+import Payment from "../models/Payment";
+import ticketService from "../services/ticketService";
+import { Types } from "mongoose";
+import { logger } from "../utils/logger";
 type NewBookingRequest = {
   eventId: string;
   userId: string;
@@ -19,6 +23,26 @@ const bookingController = {
       );
       console.log("get hold token" + JSON.stringify(holdToken));
       res.status(200).json(holdToken);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+  bookingTicketsDemo: async (req: Request, res: Response) => {
+    try {
+      const data = {
+        seats: req.body.seats,
+        eventKey: req.body.eventKey,
+        holdToken: req.body.holdToken,
+      };
+      console.log(data.seats);
+      // const bookingResult = await client.events.book(data.eventKey, data.seats);
+
+      const bookingResult = await bookingService.createPermanentBooking(
+        data.seats,
+        data.eventKey,
+        data.holdToken
+      );
+      res.status(200).json(bookingResult);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -49,19 +73,11 @@ const bookingController = {
   },
   createNewBooking: async (req: Request, res: Response) => {
     try {
-      const eventKey = req.body.eventKey;
-      const holdToken = req.body.holdToken;
-      const discountId = req.body.discountId;
-
-      console.log(req.body);
-      // const seats = req.body.tickets.flatMap((item: any) => item.seats);
       let totalPrice = 0;
       const tickets = req.body.tickets;
       tickets.map((ticket: any) => {
         totalPrice += ticket.count * ticket.price;
       });
-      const ticketSeats = tickets.flatMap((item: any) => item.seats);
-      //create booking
       const data = {
         userId: req.body.user.id,
         showTime: req.body.showtime,
@@ -71,6 +87,7 @@ const bookingController = {
         receiverName: req.body.receiverName,
         receiverEmail: req.body.receiverEmail,
         receiverPhoneNumber: req.body.receiverPhoneNumber,
+        bookingToken: req.body.holdToken?.holdToken,
       };
       console.log("tui la create new booking ne");
       console.log(data);
@@ -78,30 +95,54 @@ const bookingController = {
         userId: data.userId,
         showTime: data.showTime,
         totalPrice: data.totalPrice,
-        tickets: ticketSeats,
         receiverEmail: data.receiverEmail,
         receiverName: data.receiverName,
         receiverPhoneNumber: data.receiverPhoneNumber,
         discount: data.discount,
         status: totalPrice == 0 ? "success" : "pending",
+        bookingToken: data.bookingToken,
       });
+      console.log("created booking" + newBooking._id);
+      const ticketSaleIds = await ticketService.createTicketSales(
+        data.tickets,
+        data.userId,
+        newBooking._id,
+        data.showTime
+      );
+      newBooking.tickets = ticketSaleIds as [Types.ObjectId];
       newBooking.save();
-      // if (totalPrice == 0) {
-      //   return res.status(200).json("booking success");
-      // }
+      console.log("created tickets");
       const doc: any = newBooking;
       //create payment
       const payment: PaymentDTO = {
         userId: doc.userId,
         bookingId: doc._id,
         amount: totalPrice < 50000 ? 50000 : totalPrice,
-        embededInfo: req.body.embededInfo ?? "",
-        redirectUrl: "http://localhost:3000/events/65105f66641996e970f130a0/",
+        embededInfo: "",
       };
-      paymentService.createTransaction(payment).then((data) => {
+      paymentService.createTransaction(payment).then(async (data) => {
+        console.log("create transaction success");
         console.log(data);
         return res.status(200).json(data);
       });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json(err);
+    }
+  },
+  getBookingResult: async (req: Request, res: Response) => {},
+  deleteBooking: async (req: Request, res: Response) => {
+    try {
+      await bookingService.deleteBooking(req.body.bookingId);
+      res.status(200).json("success");
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+  cancelBooking: async (req: Request, res: Response) => {
+    try {
+      await bookingService.cancelBooking(req.params.id);
+      res.status(200).json("success");
     } catch (err) {
       res.status(500).json(err);
     }

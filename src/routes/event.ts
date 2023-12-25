@@ -2,20 +2,19 @@ import express from "express";
 const router = express.Router();
 const { verifyToken } = require("../middlewares/verifyToken");
 import eventController from "../controllers/eventController";
-// CREATE EVENT 
-router.post("/", verifyToken ,eventController.createEvent);
-router.get('/filter', eventController.filterEvent);
-router.get('/search', eventController.searchEvent);
-router.get('/recommended',eventController.recommendedEvent);
-router.get('/suggest',eventController.suggestEvent);
-router.get('/pending',eventController.pendingEvent);
-router.get('/hotEvents', eventController.topHotEvents);
-router.patch('/:id/reject',eventController.rejectEvent);
-router.patch('/:id/approve',eventController.approveEvent);
-
+// CREATE EVENT
+router.post("/", verifyToken, eventController.createEvent);
+router.get("/filter", eventController.filterEvent);
+router.get("/search", eventController.searchEvent);
+router.get("/recommended", eventController.recommendedEvent);
+router.get("/suggest", eventController.suggestEvent);
+router.get("/pending", eventController.pendingEvent);
+router.get("/hotEvents", eventController.topHotEvents);
+router.patch("/:id/reject", eventController.rejectEvent);
+router.patch("/:id/approve", eventController.approveEvent);
 
 //UPDATE EVENT
-router.put("/:id", verifyToken, eventController.updateEvent);
+router.post("/edit", verifyToken, eventController.editEvent);
 //DELETE EVENT
 router.delete("/:id", eventController.deleteEvent);
 //GET EVENT BY ID

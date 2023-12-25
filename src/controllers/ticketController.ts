@@ -25,7 +25,7 @@ const ticketController = {
   //     res.status(500).json(e);
   //   }
   // },
-  getAllTickets: async (req: Request, res: Response) => {
+  getAllTickets: async (req:Request, res: Response) => {
     const result = await TicketSale.aggregate([
       {
         $lookup: {
@@ -50,6 +50,7 @@ const ticketController = {
     ]);
     return res.json(result);
   },
+
   createTicketTypes: async (req: Request, res: Response) => {
     try {
       const newTicketTypes = await ticketService.createTicketTypes(

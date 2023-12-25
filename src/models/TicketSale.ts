@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 
 const TicketSaleSchema = new mongoose.Schema(
   {
@@ -6,6 +6,10 @@ const TicketSaleSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "TicketType",
       required: true,
+    },
+    bookingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
     },
     showTimeId: {
       type: mongoose.Schema.Types.ObjectId,

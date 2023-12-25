@@ -15,6 +15,12 @@ const BookingSchema = new mongoose.Schema(
     totalPrice: { type: Number, required: true },
     tickets: [
       {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TicketSale",
+      },
+    ],
+    ticketNames: [
+      {
         type: String,
       },
     ],
@@ -28,8 +34,12 @@ const BookingSchema = new mongoose.Schema(
     receiverPhoneNumber: { type: String },
     status: {
       type: String,
-      enum: ["success", "pending", "failed"],
+      enum: ["success", "pending", "failed", "cancel"],
       default: "pending",
+    },
+    bookingToken: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }

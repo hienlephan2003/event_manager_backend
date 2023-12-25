@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import ShowTime from "../models/ShowTime";
 export type IShowTime = {
   showTimeStartDate: Date;
@@ -60,6 +61,16 @@ const showtimeService = {
           eventId: eventId,
         }).exec();
         resolve(allShowTime);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+  getEventKeyOfShowtime: (showtimeId: string) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const showtime = await ShowTime.findById(showtimeId).exec();
+        resolve(showtime?.showTimeStage);
       } catch (e) {
         reject(e);
       }

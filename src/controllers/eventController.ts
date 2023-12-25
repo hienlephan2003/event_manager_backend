@@ -9,6 +9,8 @@ import showtimeService from "../services/showTimeService";
 import stageService from "../services/stageService";
 import { Region, SeatsioClient } from "seatsio";
 import TicketSale from "../models/TicketSale";
+import TicketType from "../models/TicketType";
+import ShowTime from "../models/ShowTime";
 // import { IEvent } from "./../models/Event";
 
 const eventController = {
@@ -52,6 +54,50 @@ const eventController = {
       console.log(showtimes);
       res.status(200).json({ event: newEvent, showtimes, tickets, stage });
       console.log("tui la create new event ne");
+    } catch (e) {
+      console.log("e " + e);
+      res.status(500).json(e);
+    }
+  },
+  editEvent: async (req: Request, res: Response) => {
+    try {
+      const event = {
+        eventName: req.body.eventName,
+        description: req.body.description,
+        coverImage: req.body.coverImage,
+        tickets: req.body.tickets,
+        showtimes: req.body.showtimes,
+        address: req.body.address,
+        eventId: req.body.eventId,
+        chartId: req.body.chartId,
+      };
+      console.log(req.body);
+      const editEvent = await Event.findByIdAndUpdate(event.eventId, {
+        event,
+      });
+      console.log(editEvent);
+      event.tickets.map(async (item: any) => {
+        await TicketType.findByIdAndUpdate(item?._id, { item });
+      });
+      let showtimes: any[] = [];
+      event.showtimes.map(async (item: any) => {
+        if (item._id) {
+          const showtime = await ShowTime.findByIdAndUpdate(item._id, { item });
+          showtimes.push(showtime);
+        }
+      });
+      const newShowtimes = event.showtimes.filter(
+        (item: any) => item._id == null
+      );
+      const createNewShowtimes = await showtimeService.createNewShowTimes(
+        newShowtimes,
+        event.eventId,
+        event.chartId
+      );
+      showtimes.push(...(createNewShowtimes as Array<any>));
+      console.log(showtimes);
+      res.status(200).json({ event: editEvent, showtimes });
+      console.log("tui la edit event ne");
     } catch (e) {
       console.log("e " + e);
       res.status(500).json(e);
