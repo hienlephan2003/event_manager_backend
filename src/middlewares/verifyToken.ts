@@ -6,7 +6,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   console.log(authHeader);
   if (authHeader) {
     const token = authHeader.split(" ")[1];
-    jwt.verify(token, process.env.SECRET, async (err: any, user: any) => {
+    jwt.verify(token, process.env.JWT_SEC, async (err: any, user: any) => {
       if (err) return res.status(403).json("Invalid token");
       req.body.user = user;
       console.log(user);

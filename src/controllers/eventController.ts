@@ -283,8 +283,8 @@ const eventController = {
         {
           $lookup: {
             from: "tickettypes",
-            localField: "showtimes._id",
-            foreignField: "showtimeId",
+            localField: "_id",
+            foreignField: "eventId",
             as: "ticketTypes",
           },
         },
@@ -672,8 +672,8 @@ const eventController = {
       {
         $lookup: {
           from: "tickettypes",
-          localField: "showtimes._id",
-          foreignField: "showtimeId",
+          localField: "_id",
+          foreignField: "eventId",
           as: "ticketTypes",
         },
       },

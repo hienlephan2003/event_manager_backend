@@ -1,5 +1,5 @@
 import mongoose, { Model, Document } from "mongoose";
-
+import Discount from "./Discount";
 const UserSchema = new mongoose.Schema(
   {
     email: { type: String },
@@ -19,6 +19,12 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["verified", "new", "ban"],
     },
+    discounts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Discount'
+      }
+    ]
   },
   { timestamps: true }
 );
@@ -37,7 +43,7 @@ interface UserDocument extends Document {
   phoneNumber: string;
   imageUrl?: string;
   dateOfBirth?: Date;
-
+  discounts?: any;
   role: "admin" | "user" | "officer";
   accountStatus?: "verified" | "new" | "ban";
   createdAt: Date;
