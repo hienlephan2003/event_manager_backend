@@ -95,7 +95,23 @@ const ticketService = {
       try {
         const tickets = await TicketSale.find({
           bookingId: bookingId,
-        }).populate("ticketTypeId");
+        }).populate([
+          {
+            path: "ticketTypeId",
+          },
+          {
+            path: "showTimeId",
+            populate: {
+              path: "eventId",
+              populate: {
+                path: "stageId",
+                populate: {
+                  path: "addressId",
+                },
+              },
+            },
+          },
+        ]);
         res(tickets);
       } catch (err) {
         rej(err);

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Event from "../models/Event";
 import TicketSale from "../models/TicketSale";
 import { User } from "../models/User";
+import { ObjectId } from "mongodb";
 const myController = {
   getAllEvents: async (req: Request, res: Response) => {
     try {
@@ -58,7 +59,6 @@ const myController = {
   },
   getMyTickets: async (req: Request, res: Response) => {
     const userId = req.body.user.id;
-    console.log(userId);
     const result = await TicketSale.find({ user: userId })
     .populate([
       {
@@ -68,6 +68,12 @@ const myController = {
         path: "showTimeId",
         populate: {
           path: "eventId",
+          populate: {
+            path: "stageId",
+            populate: {
+              path: "addressId",
+            },
+          },
         },
       },
     ]);
@@ -76,18 +82,18 @@ const myController = {
   getMyDiscount: async (req: Request, res: Response) => {
     const userId = req.body.user.id;
     console.log(userId);
-    const result = await User.findOne({ _id: userId }).populate([{
-      path:'discounts',
-      populate : {
-        path: 'showtimeId',
-        model: 'ShowTime',
+    const result = await User.findOne({ _id: userId }).populate([
+      {
+        path: "discounts",
         populate: {
-          path:'eventId'
-        }
-      }
-    },
-     
-  ]);
+          path: "showtimeId",
+          model: "ShowTime",
+          populate: {
+            path: "eventId",
+          },
+        },
+      },
+    ]);
     return res.json(result?.discounts);
   },
 };
