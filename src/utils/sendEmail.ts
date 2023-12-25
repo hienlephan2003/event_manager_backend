@@ -1,8 +1,8 @@
 
 // const nodemailer = require("nodemailer");
 import * as nodemailer from 'nodemailer'
-
-module.exports = async(email:any, subject:any, text:any) => {
+const path = require('path');
+module.exports = async(email:any, subject:any, text:any, attach?:any) => {
     try {
         // host: "fdf",
         //     service: process.env.SERVICE,
@@ -28,7 +28,8 @@ module.exports = async(email:any, subject:any, text:any) => {
             from: process.env.USER,
             to: email,
             subject: subject,
-            html: text
+            html: text,
+            attachments:attach
         })
         console.log("Email sent successfully")
     }

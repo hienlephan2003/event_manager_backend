@@ -6,6 +6,14 @@ import ticketService from "../services/ticketService";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import TicketSale from "../models/TicketSale";
+import axios from "axios";
+const PDFDocument = require("pdfkit");
+const QRCode = require("qrcode");
+const fs = require("fs");
+const path = require("path");
+import * as mailgen from "mailgen";
+import { User } from "../models/User";
+const sendEmail = require("../utils/sendEmail");
 const ticketController = {
   // createTicketSales: async (req: Request, res: Response) => {
   //   try {
@@ -17,7 +25,7 @@ const ticketController = {
   //     res.status(500).json(e);
   //   }
   // },
-  getAllTickets: async (req:Request, res: Response) => {
+  getAllTickets: async (req: Request, res: Response) => {
     const result = await TicketSale.aggregate([
       {
         $lookup: {
@@ -33,15 +41,14 @@ const ticketController = {
           preserveNullAndEmptyArrays: true,
         },
       },
-        {
-          $unwind: {
-            path: "$seats",
-            preserveNullAndEmptyArrays: true,
-          },
+      {
+        $unwind: {
+          path: "$seats",
+          preserveNullAndEmptyArrays: true,
         },
-      
+      },
     ]);
-    return  res.json(result);
+    return res.json(result);
   },
   createTicketTypes: async (req: Request, res: Response) => {
     try {
@@ -87,7 +94,7 @@ const ticketController = {
       // const listShowtime = event.showtimes.map(
       //   (showtime: { _id: any }) => showtime._id
       // );
-      const listTickets = await TicketType.find({eventId: eventId});
+      const listTickets = await TicketType.find({ eventId: eventId });
       res.status(200).json(listTickets);
     } catch (err) {
       res.status(500).json(err);
@@ -114,7 +121,6 @@ const ticketController = {
       // const eventId: any = req.query.event_id;
       // const doc = await TicketSale.find({ticketTypeId: typeId});
 
-    
       const doc = await TicketSale.aggregate([
         {
           $match: {
@@ -132,40 +138,39 @@ const ticketController = {
         {
           $unwind: {
             path: "$ticketType",
-            preserveNullAndEmptyArrays: true
-          }
+            preserveNullAndEmptyArrays: true,
+          },
         },
         {
           $set: {
             countSeats: {
-              $size: "$seats"
-            }
-          }
+              $size: "$seats",
+            },
+          },
         },
         {
           $group: {
             _id: "$ticketType",
             dates: {
-              $push: "$createdAt"
+              $push: "$createdAt",
             },
             seats: {
-              $push: "$countSeats"
+              $push: "$countSeats",
             },
-            countTicket: {$count:{}},
-            totalSeats : {
-              $sum: "$countSeats"
-            }
-          }
-        
+            countTicket: { $count: {} },
+            totalSeats: {
+              $sum: "$countSeats",
+            },
+          },
         },
 
         {
           $addFields: {
             totalPrice: {
-              $multiply: ["$totalSeats", "$_id.ticketTypePrice"]
-            }
-          }
-        }
+              $multiply: ["$totalSeats", "$_id.ticketTypePrice"],
+            },
+          },
+        },
         // {
         //   $project: {
         //     _id: 1,
@@ -174,7 +179,6 @@ const ticketController = {
         //     ticketsales: 1,
         //   },
         // },
-      
       ]);
       res.status(200).json(doc);
     } catch (err) {
@@ -273,7 +277,7 @@ const ticketController = {
     ]);
     res.json(tickets);
   },
-  getTicketOfShowtime: async(req: Request, res: Response) => {
+  getTicketOfShowtime: async (req: Request, res: Response) => {
     const showtimeId = req.params.showtimeId;
     const result = await TicketSale.aggregate([
       {
@@ -309,10 +313,77 @@ const ticketController = {
           preserveNullAndEmptyArrays: true,
         },
       },
-    ])
-    return res.json(result)
-  
+    ]);
+    return res.json(result);
+  },
+  generatePdf: async (req: Request, res: Response) => {
+    const ticketIds = req.query.ids;
+    const userId = req.query.userId;
+    const user: any = await User.findById(userId);
+    const email = user.email;
+    let tickets: any[];
+    let attachs: any[] = [];
+    if (!Array.isArray(ticketIds)) {
+      tickets = [ticketIds];
+    } else tickets = ticketIds;
 
-  } 
+    const ticketDatas: any = await TicketSale.find({
+      _id: {
+        $in: tickets,
+      },
+    }).populate([
+      {
+        path: "ticketTypeId",
+      },
+      {
+        path: "showTimeId",
+        populate: {
+          path: "eventId",
+        },
+      },
+    ]);
+    let i = 0;
+    while (i < ticketDatas.length) {
+      const ticketData = ticketDatas[0];
+      const eventId = ticketData?.showTimeId.eventId._id;
+      const eventData = axios.get(
+        `${process.env.BASE_URL}api/event/detail/${eventId}`
+      );
+      const detailEvent = (await eventData).data;
+      const doc = new PDFDocument();
+      const fontPath = path.resolve(
+        __dirname,
+        "../fonts/Montserrat-Medium.ttf"
+      );
+      doc.pipe(fs.createWriteStream(`ticket${tickets[i]}.pdf`));
+      let qr = await QRCode.toDataURL(tickets[i]);
+      doc.rect(10, 10, doc.page.width - 20, 240).stroke();
+      doc
+        .font(fontPath)
+        .fontSize(20)
+        .text(ticketData?.showTimeId.eventId.eventName, 20, 50);
+      doc.fontSize(16).text("Location: " + detailEvent.address, 20, 100);
+      doc.fontSize(16).text("Time: " + detailEvent.startTime, 20, 120);
+      doc.fontSize(16).image(qr, 480, 50, { width: 100 });
+      doc
+        .fontSize(16)
+        .text("Type: " + ticketData.ticketTypeId.ticketTypeName, 20, 140);
+      doc.end();
+      const attach = path.resolve(__dirname, `../../ticket${tickets[i]}.pdf`);
+      let temp = {
+        filename: `ticket${tickets[i]}.pdf`, 
+        path: attach, 
+        contentType: "application/pdf",
+      };
+      attachs.push(temp);
+      i++;
+    }
+    try {
+      await sendEmail(email, "Confirm moderator email", "Your ticket", attachs);
+      res.json("send email successfully");
+    } catch (err) {
+      throw err;
+    }
+  },
 };
 export default ticketController;
