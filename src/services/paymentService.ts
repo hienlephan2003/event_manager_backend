@@ -166,6 +166,11 @@ const paymentService = {
               const booking: any = await bookingService.getBookingById(
                 payment?.bookingId
               );
+              const updatedPayment = await Payment.findByIdAndUpdate(
+                payment?._id,
+                { status: "success" },
+                { new: true }
+              );
               //create permanent booking
               const eventKeyId: any =
                 await showtimeService.getEventKeyOfShowtime(booking.showTime);
@@ -176,11 +181,6 @@ const paymentService = {
                 );
               console.log("seatNames");
               logger.info(seatNames);
-              const updatedPayment = await Payment.findByIdAndUpdate(
-                payment?._id,
-                { status: "success" },
-                { new: true }
-              );
               if (payment?.status == "pending") {
                 console.log("going to seat io" + payment.status);
                 await bookingService.createPermanentBooking(
@@ -189,6 +189,8 @@ const paymentService = {
                   booking.bookingToken
                 );
               }
+
+              //////
               resolve({
                 paymentStatus: "success",
                 payment: updatedPayment,
