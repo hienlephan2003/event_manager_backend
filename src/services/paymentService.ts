@@ -95,7 +95,7 @@ const paymentService = {
         newPayment.save();
         console.log("payment created");
         order.embeddata = JSON.stringify({
-          redirecturl: `http://localhost:3000/bookingResult/${newPayment._id}/`,
+          redirecturl: `https://dev-seatmap--tiny-kitsune-f8476a.netlify.app/bookingResult/${newPayment._id}/`,
         });
         //tao macid
         const data1 =
