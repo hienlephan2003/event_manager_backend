@@ -9,6 +9,7 @@ import Payment from "../models/Payment";
 import ticketService from "../services/ticketService";
 import { Types } from "mongoose";
 import { logger } from "../utils/logger";
+import showtimeService from "../services/showTimeService";
 type NewBookingRequest = {
   eventId: string;
   userId: string;
@@ -90,6 +91,7 @@ const bookingController = {
         bookingToken: req.body.holdToken?.holdToken,
       };
       console.log("tui la create new booking ne");
+
       // console.log(data);
       await Promise.all(
         data.discount?.map(async (item: any) => {
@@ -125,6 +127,23 @@ const bookingController = {
         data.showTime
       );
       newBooking.tickets = ticketSaleIds as [Types.ObjectId];
+      //create permanent booking
+
+      client.holdTokens;
+      const eventKeyId: any = await showtimeService.getEventKeyOfShowtime(
+        data.showTime
+      );
+      // console.log("get event key id" + eventKeyId);
+      const seatNames: any = await bookingService.getSeatNamesByBookingId(
+        newBooking._id
+      );
+      await client.events.hold(eventKeyId, seatNames, data.bookingToken);
+      // await bookingService.createPermanentBooking(
+      //   seatNames,
+      //   eventKeyId,
+      //   data.bookingToken
+      // );
+
       newBooking.save();
       console.log("created tickets");
       const doc: any = newBooking;
