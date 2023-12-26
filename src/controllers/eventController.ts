@@ -11,6 +11,7 @@ import { Region, SeatsioClient } from "seatsio";
 import TicketSale from "../models/TicketSale";
 import TicketType from "../models/TicketType";
 import ShowTime from "../models/ShowTime";
+import Organizer from "../models/Organizer";
 // import { IEvent } from "./../models/Event";
 
 const eventController = {
@@ -27,7 +28,17 @@ const eventController = {
         showtimes: req.body.showtimes,
         address: req.body.address,
         stageId: null,
+        moderators: [
+          {
+            user: new ObjectId(req.body.user.id),
+            role: "Owner",
+          },
+        ],
       };
+      const organizer = await Organizer.findOne({
+        managedBy: req.body.user.id,
+      });
+      event.organizerId = (organizer as any)._id;
       console.log(req.body);
       let stage;
       if (event.chartId) {
@@ -629,10 +640,10 @@ const eventController = {
       },
       {
         $match: {
-          'showtimes.startAt': {
-            $gte: new Date()
-          }
-        }
+          "showtimes.startAt": {
+            $gte: new Date(),
+          },
+        },
       },
       {
         $lookup: {

@@ -83,14 +83,30 @@ const bookingController = {
         showTime: req.body.showtime,
         totalPrice,
         tickets: req.body.tickets,
-        discount: [],
+        discount: req.body.discounts,
         receiverName: req.body.receiverName,
         receiverEmail: req.body.receiverEmail,
         receiverPhoneNumber: req.body.receiverPhoneNumber,
         bookingToken: req.body.holdToken?.holdToken,
       };
       console.log("tui la create new booking ne");
-      console.log(data);
+      // console.log(data);
+      await Promise.all(
+        data.discount?.map(async (item: any) => {
+          const result = await discountService.applyDiscount(
+            item._id,
+            data.userId,
+            item.maxtimeUsed
+          );
+          console.log(result);
+          if (result == true) {
+            let value = totalPrice * item.percent;
+            if (value > item.maxAmount) value = item.maxAmount;
+            totalPrice -= value;
+          }
+        })
+      );
+      if (totalPrice < 0) totalPrice = 0;
       const newBooking = new Booking({
         userId: data.userId,
         showTime: data.showTime,
@@ -98,7 +114,6 @@ const bookingController = {
         receiverEmail: data.receiverEmail,
         receiverName: data.receiverName,
         receiverPhoneNumber: data.receiverPhoneNumber,
-        discount: data.discount,
         status: totalPrice == 0 ? "success" : "pending",
         bookingToken: data.bookingToken,
       });

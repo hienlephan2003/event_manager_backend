@@ -5,30 +5,22 @@ import Discount from "../models/Discount";
 import { ObjectId } from "mongodb";
 import { TrustProductsEntityAssignmentsContextImpl } from "twilio/lib/rest/trusthub/v1/trustProducts/trustProductsEntityAssignments";
 import discountService from "../services/discountService";
+import DiscountUsed from "../models/DiscountUsed";
 const discountController = {
   create: async (req: Request, res: Response) => {
     try {
-      const discount = new Discount({
-        code: req.body.code,
-        amount: req.body.amount,
-        quantity: req.body.quantity,
-        startAt: new Date(req.body.startAt),
-        endAt: new Date(req.body.endAt),
-        showtimeId: new ObjectId(req.body.showtimeId),
-      });
-      const result = await discount.save();
-      res.status(200).json({
-        success: true,
-        Message: "add successfully",
-      });
+      console.log(req.body);
+      const discount = await Discount.create(req.body);
+      res.status(200).json(discount);
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },
   getAll: async (req: Request, res: Response) => {
     try {
       const listDiscount = await Discount.find({
-        showtimeId: req.query.showtime_id,
+        showtimeId: req.query.event_id,
       });
       res.status(200).json(listDiscount);
     } catch (e) {
@@ -96,20 +88,41 @@ const discountController = {
       res.status(500).json(err);
     }
   },
-  getDiscountsOfShowtime: async (req: Request, res: Response) => {
+  getDiscountsOfEvent: async (req: Request, res: Response) => {
     try {
-      const discounts = await Discount.find({
-        showtimeId: req.params.showtimeId,
-      });
-      res.status(200).json(discounts);
+      const eventId = req.params.id;
+      const discounts = await Discount.find({ eventId })
+        .where("startAt")
+        .lt(Date.now())
+        .where("endAt")
+        .gt(Date.now())
+        .populate("ticketTypes");
+
+      const validDiscounts = await Promise.all(
+        discounts.map(async (item: any) => {
+          const discountUsed = await DiscountUsed.findOne({
+            discountId: item._id,
+            userId: req.body.user.id,
+          });
+          console.log(discountUsed);
+          if (!discountUsed || discountUsed.timeCount < item.maxtimeUsed) {
+            return item;
+          } else return null;
+        })
+      );
+      console.log(validDiscounts);
+      const filteredDiscounts = validDiscounts.filter((item) => item !== null);
+
+      res.status(200).json(filteredDiscounts);
     } catch (err) {
       console.log(err);
       res.status(500).json(err);
     }
   },
-  findAll: async(req: Request, res: Response) => {
+
+  findAll: async (req: Request, res: Response) => {
     const result = await Discount.find({});
     return res.json(result);
-  }
+  },
 };
 export default discountController;

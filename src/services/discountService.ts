@@ -28,6 +28,30 @@ const discountService = {
       }
     });
   },
+  applyDiscount: async (
+    discountId: string,
+    userId: string,
+    maxTimeUsed: number
+  ) => {
+    return new Promise(async (res, rej) => {
+      try {
+        const discount = await DiscountUsed.findOne({ discountId, userId });
+        console.log(discount);
+        if (!discount) {
+          const newDiscount = await DiscountUsed.create({ discountId, userId });
+          return res(true);
+        } else {
+          if (discount.timeCount <= maxTimeUsed) {
+            discount.timeCount += 1;
+            await discount.save();
+            return res(true);
+          } else return res(false);
+        }
+      } catch (err) {
+        rej(err);
+      }
+    });
+  },
 };
 
 export default discountService;

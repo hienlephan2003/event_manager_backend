@@ -2,14 +2,22 @@ import mongoose, { mongo } from "mongoose";
 
 const DiscountSchema = new mongoose.Schema(
   {
+    discountName: { type: String, required: true },
+    description: { type: String, required: true },
     code: { type: String, required: true },
-    amount: { type: Number, required: true },
+    percent: { type: Number, required: true },
+    maxAmount: { type: Number },
+    minOrderAmount: { type: Number },
     startAt: { type: Date, required: true },
     endAt: { type: Date, required: true },
-    // types: [{ type: mongoose.Schema.Types.ObjectId , required: true, ref: 'TicketType'}]
     quantity: { type: Number, required: true },
-    maxUsed: { type: Number, default: 1 },
-    showtimeId: { type: mongoose.Schema.Types.ObjectId, ref: "Showtime" },
+    maxtimeUsed: { type: Number, default: 1 },
+    eventId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+    },
+    ticketTypes: { type: mongoose.Schema.Types.ObjectId, ref: "TicketType" },
   },
   { timestamps: true }
 );

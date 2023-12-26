@@ -10,4 +10,5 @@ router.post("/", discountController.create);
 router.patch("/:id", discountController.update);
 router.delete("/:id", discountController.delete);
 router.post("/validate", verifyToken, discountController.checkDiscount);
+router.get("/event/:id", verifyToken, discountController.getDiscountsOfEvent);
 module.exports = router;

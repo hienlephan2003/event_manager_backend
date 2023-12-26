@@ -12,7 +12,7 @@ const chartRouter = require("./chart");
 const imageRouter = require("./image");
 const bookingRouter = require("./booking");
 const stageRouter = require("./stage");
-const parameterRoute = require('./parameter')
+const parameterRoute = require("./parameter");
 const organizerRouter = require("./organizer");
 function Routes(app: Application) {
   app.use("/api", authRouter);
