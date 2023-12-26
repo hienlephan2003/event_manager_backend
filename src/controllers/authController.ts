@@ -102,7 +102,7 @@ const authController = {
       const phoneNumber = req.body.phoneNumber;
       const password = req.body.password;
       const otp = req.body.otp;
-      const result = await otpService.verifyOTP("84978754723", otp);
+      const result = await otpService.verifyOTP("84862622563", otp);
       if (result == "approved") {
         const newUser = new User({
           phoneNumber: phoneNumber,

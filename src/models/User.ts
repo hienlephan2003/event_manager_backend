@@ -22,9 +22,9 @@ const UserSchema = new mongoose.Schema(
     discounts: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Discount'
-      }
-    ]
+        ref: "Discount",
+      },
+    ],
   },
   { timestamps: true }
 );
