@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import paymentService from "../services/paymentService";
 import { PaymentDTO, QueryRequest, QueryType } from "../types/payment.type";
 import bookingService from "../services/bookingService";
+import axios from "axios";
 const paymentController = {
   createNewPayment: async (request: Request, response: Response) => {
     try {
@@ -29,6 +30,17 @@ const paymentController = {
       paymentService
         .createCallbackQuery(request.body.paymentId, QueryType.createOrder)
         .then((result: any) => {
+          const tickets = result.tickets;
+          const ids = tickets.map((ticket:any) => ticket._id);
+          axios.get(`${process.env.BASE_URL}api/ticket/pdf`, {
+            params: {
+              ids: ids,
+              email:result.booking.receiverEmail
+            },
+            paramsSerializer: {
+              indexes: null,
+            }
+          });
           response.status(200).json(result);
         });
     } catch (err: any) {

@@ -318,9 +318,9 @@ const ticketController = {
   },
   generatePdf: async (req: Request, res: Response) => {
     const ticketIds = req.query.ids;
-    const userId = req.query.userId;
-    const user: any = await User.findById(userId);
-    const email = user.email;
+    const email = req.query.email;
+    // const user: any = await User.findById(userId);
+    // const email = user.email;
     let tickets: any[];
     let attachs: any[] = [];
     if (!Array.isArray(ticketIds)) {
@@ -379,7 +379,7 @@ const ticketController = {
       i++;
     }
     try {
-      await sendEmail(email, "Confirm moderator email", "Your ticket", attachs);
+      await sendEmail(email, "Your ticket", "Your ticket", attachs);
       res.json("send email successfully");
     } catch (err) {
       throw err;
