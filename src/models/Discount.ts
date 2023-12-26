@@ -4,7 +4,6 @@ const DiscountSchema = new mongoose.Schema(
   {
     discountName: { type: String, required: true },
     description: { type: String, required: true },
-    code: { type: String, required: true },
     percent: { type: Number, required: true },
     maxAmount: { type: Number },
     minOrderAmount: { type: Number },

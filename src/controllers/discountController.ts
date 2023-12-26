@@ -20,7 +20,7 @@ const discountController = {
   getAll: async (req: Request, res: Response) => {
     try {
       const listDiscount = await Discount.find({
-        showtimeId: req.query.event_id,
+        eventId: req.query.event_id,
       });
       res.status(200).json(listDiscount);
     } catch (e) {
