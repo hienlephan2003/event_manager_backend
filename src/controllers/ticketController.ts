@@ -188,7 +188,6 @@ const ticketController = {
   },
   filterTicket: async (req: Request, res: Response) => {
     const showtimeId = req.params.showtimeId;
-
     const type = req.query.type;
     const sort = req.query.sort;
     console.log(type, sort);
@@ -302,15 +301,15 @@ const ticketController = {
       },
       {
         $lookup: {
-          from: "users",
-          localField: "user",
+          from: "bookings",
+          localField: "bookingId",
           foreignField: "_id",
-          as: "user",
+          as: "booking",
         },
       },
       {
         $unwind: {
-          path: "$user",
+          path: "$booking",
           preserveNullAndEmptyArrays: true,
         },
       },
