@@ -58,12 +58,12 @@ const bookingController = {
       const holdToken = req.body.holdToken;
       const seats = req.body.tickets.flatMap((item: any) => item.seats);
       console.log(seats, eventKey);
-      const result = await client.events.hold(
-        eventKey,
-        seats,
-        holdToken.holdToken
-      );
-      console.log(result);
+      // const result = await client.events.hold(
+      //   eventKey,
+      //   seats,
+      //   holdToken.holdToken
+      // );
+      // console.log(result);
       return res.status(200).json("success");
     } catch (err) {
       console.log(err);
@@ -89,9 +89,6 @@ const bookingController = {
         bookingToken: req.body.holdToken?.holdToken,
       };
       console.log("tui la create new booking ne");
-      await TicketHoldToken.findByIdAndUpdate(data.bookingToken, {
-        tickets: [],
-      });
 
       // console.log(data);
       await Promise.all(
