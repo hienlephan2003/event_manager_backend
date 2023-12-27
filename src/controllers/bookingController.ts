@@ -10,6 +10,7 @@ import ticketService from "../services/ticketService";
 import { Types } from "mongoose";
 import { logger } from "../utils/logger";
 import showtimeService from "../services/showTimeService";
+import TicketHoldToken from "../models/TicketHoldToken";
 type NewBookingRequest = {
   eventId: string;
   userId: string;
@@ -35,7 +36,7 @@ const bookingController = {
         eventKey: req.body.eventKey,
         holdToken: req.body.holdToken,
       };
-      console.log(data.seats);
+      console.log(data);
       // const bookingResult = await client.events.book(data.eventKey, data.seats);
 
       const bookingResult = await bookingService.createPermanentBooking(
@@ -45,30 +46,27 @@ const bookingController = {
       );
       res.status(200).json(bookingResult);
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },
   newHoldTickets: async (req: Request, res: Response) => {
-    // const newBookingRequest : NewBookingRequest = {
-    //     eventId: req.body?.eventId || "" ,
-    //     userId: req.user.id || "",
-    //     objects: req.body.objects
-    // }
     try {
-      console.log("tui la booking event ne");
+      console.log("tui la hold tickets ne");
       console.log(JSON.stringify(req.body));
       const eventKey = req.body.eventKey;
       const holdToken = req.body.holdToken;
       const seats = req.body.tickets.flatMap((item: any) => item.seats);
       console.log(seats, eventKey);
-      // const result = await client.events.hold(
-      //   eventKey,
-      //   req.body.tickets[0].seats,
-      //   holdToken
-      // );
-      // console.log(result);
-      return res.status(200).json("result");
+      const result = await client.events.hold(
+        eventKey,
+        seats,
+        holdToken.holdToken
+      );
+      console.log(result);
+      return res.status(200).json("success");
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },
@@ -91,6 +89,9 @@ const bookingController = {
         bookingToken: req.body.holdToken?.holdToken,
       };
       console.log("tui la create new booking ne");
+      await TicketHoldToken.findByIdAndUpdate(data.bookingToken, {
+        tickets: [],
+      });
 
       // console.log(data);
       await Promise.all(
@@ -137,7 +138,7 @@ const bookingController = {
       const seatNames: any = await bookingService.getSeatNamesByBookingId(
         newBooking._id
       );
-      await client.events.hold(eventKeyId, seatNames, data.bookingToken);
+      // await client.events.hold(eventKeyId, seatNames, data.bookingToken);
       // await bookingService.createPermanentBooking(
       //   seatNames,
       //   eventKeyId,

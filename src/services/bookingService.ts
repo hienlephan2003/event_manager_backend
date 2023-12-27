@@ -68,36 +68,38 @@ const bookingService = {
           userId,
           eventKey,
         });
-        // if (token) {
-        //   const tockenDoc = (token as any)._doc;
-        //   if (tockenDoc.expiresAt > new Date()) {
-        //     console.log("this 1");
-        //     resolve({ ...tockenDoc, session: "continue" });
-        //   } else {
-        //     console.log("this 2");
-        //     const newholdToken = await client.holdTokens.create();
-        //     token.holdToken = newholdToken.holdToken;
-        //     token.expiresAt = newholdToken.expiresAt;
-        //     token.expiresInSeconds = newholdToken.expiresInSeconds;
-        //     token.save();
-        //     const tokenDoc = (token as any)._doc;
-        //     resolve({ ...tokenDoc, session: "continue" });
-        //   }
-        // }
-        //  else {
-        const newholdToken = await client.holdTokens.create();
-        console.log(newholdToken);
-        const newToken = new TicketHoldToken({
-          userId,
-          eventKey,
-          holdToken: newholdToken.holdToken,
-          expiresAt: newholdToken.expiresAt,
-          expiresInSeconds: newholdToken.expiresInSeconds,
-        });
-        newToken.save();
-        const tokenDoc: any = (newToken as any)._doc;
-        resolve({ ...tokenDoc, session: "start" });
-        // }
+        if (token) {
+          const tockenDoc = (token as any)._doc;
+          if (tockenDoc.expiresAt > new Date()) {
+            console.log(tockenDoc.expiresAt);
+            console.log(new Date());
+            console.log("this 1");
+            resolve({ ...tockenDoc, session: "continue" });
+          } else {
+            console.log("this 2");
+            const newholdToken = await client.holdTokens.create();
+            console.log(newholdToken);
+            token.holdToken = newholdToken.holdToken;
+            token.expiresAt = newholdToken.expiresAt;
+            token.expiresInSeconds = newholdToken.expiresInSeconds;
+            token.save();
+            const tokenDoc = (token as any)._doc;
+            resolve({ ...tokenDoc, session: "expirecontinue" });
+          }
+        } else {
+          const newholdToken = await client.holdTokens.create();
+          console.log(newholdToken);
+          const newToken = new TicketHoldToken({
+            userId,
+            eventKey,
+            holdToken: newholdToken.holdToken,
+            expiresAt: newholdToken.expiresAt,
+            expiresInSeconds: newholdToken.expiresInSeconds,
+          });
+          newToken.save();
+          const tokenDoc: any = (newToken as any)._doc;
+          resolve({ ...tokenDoc, session: "start" });
+        }
       } catch (err) {
         console.log(err);
         reject(err);
