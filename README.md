@@ -1,7 +1,7 @@
-# 🚀 Employee Management API
+# 🚀 Event Management API
 
 ## 📝 Overview
-This project is an Employee Management API built using Express and MongoDB. It allows managing events, adding events, booking tickets, and processing payments using Zalo Pay. Additionally, it utilizes seat.io for creating stages, providing event managers the ability to customize stages, and enabling users to book seats.
+This project is an Event Management API built using Express and MongoDB. It allows managing events, adding events, booking tickets, and processing payments using Zalo Pay. Additionally, it utilizes seat.io for creating stages, providing event managers the ability to customize stages, and enabling users to book seats.
 
 ## 💻 Technologies Used
 - Express.js
